@@ -387,8 +387,12 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:12px 24px;justify-content:space-bet
 
 <section id="data" class="alt">
   <div class="wrap">
-    <div class="sec-head"><div class="eyebrow">데이터 · 보안</div><h2>10개 데이터 항목, 모두 가상 데이터로 구성했어요</h2>
-      <p>실제 아동의 개인정보는 쓰지 않았어요. 시연용 아이 이름과 항공편, 사진은 모두 가상으로 만든 것이에요.</p></div>
+    <div class="sec-head"><div class="eyebrow">데이터 · 보안</div><h2>실제 데이터베이스에 저장되고, 권한은 DB가 강제해요</h2>
+      <p>아래 항목은 PostgreSQL 데이터베이스(Supabase)에 실제로 저장돼요. 한쪽에서 기록하면 다른 기기의 화면이 바로 바뀌어요. 다만 담긴 내용은 전부 시연용 가상 데이터이고, 실제 아동의 개인정보는 쓰지 않았어요.</p></div>
+    <div class="principle" style="margin-bottom:28px">
+      <div><span class="k">ROW LEVEL SECURITY</span><h3>권한을 앱이 아니라 DB가 검사해요</h3><p>누가 무엇을 볼 수 있는지를 화면 코드가 아니라 데이터베이스 정책 40개로 막아요. 프론트엔드를 조작해도 남의 아이 정보는 나오지 않아요.</p><span class="src a">정책 40개 적용</span></div>
+      <div><span class="k">APPEND ONLY</span><h3>인계 기록은 고칠 수 없어요</h3><p>상태 기록과 인계 기록 테이블에는 수정·삭제 권한을 아예 만들지 않았어요. 한번 쌓인 기록은 누구도 바꿀 수 없어서 책임 추적이 가능해요.</p><span class="src b">수정 권한 없음</span></div>
+    </div>
     <div class="tbl"><table>
       <thead><tr><th>항목</th><th>담는 내용</th><th>주로 쓰는 쪽</th></tr></thead>
       <tbody>
@@ -464,7 +468,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:12px 24px;justify-content:space-bet
 <footer>
   <div class="wrap">
     <span><b style="color:var(--ink)">UM LINK</b> · 대학생 창업 · 캡스톤 디자인 공모전 출품작</span>
-    <span>모든 아동·승무원·항공편 정보는 시연용 가상 데이터예요. 실제 결제·운항 정보·본인인증은 연동되지 않았어요.</span>
+    <span>데이터는 실제 서버에 저장되고 기기 간에 공유돼요. 다만 아동·승무원·항공편 정보는 시연용 가상 데이터이고, 항공사 운항 정보·결제사·본인인증은 연동되지 않았어요.</span>
   </div>
 </footer>
 <script src="flight-journey.js"></script>
