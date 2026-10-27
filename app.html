@@ -1,0 +1,2079 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>UM LINK 시연 앱</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: 시연 상단 바 + 1~2개의 앱 패널(승무원 태블릿 | 보호자 모바일), 같은 저장소를 공유 */
+:root{
+  --bg:#edf1f6; --surface:#ffffff; --surface-2:#f5f7fb; --ink:#14203f; --muted:#5a6684; --line:#d4dbe6;
+  --navy:#1f2a5c; --navy-2:#2d3a73; --navy-ink:#ffffff; --navy-muted:#b6c0e0;
+  --accent:#1b7594; --accent-ink:#ffffff; --accent-soft:#e0eff5;
+  --ok:#2a7a4a; --ok-soft:#e0f2e6; --warn:#985a10; --warn-soft:#fbeedb; --bad:#b03535; --bad-soft:#f9e2e2;
+  --sea:#dfe9f2; --land:#c9d6e3; --route:#1b7594; --fx-remain:#8590aa; --plane:#1f2a5c; --grid:rgba(31,42,92,.10); --tile-filter:none;
+  --shadow:0 1px 2px rgba(20,32,63,.06),0 6px 20px rgba(20,32,63,.06);
+  --font-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --r:12px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0c1223; --surface:#151d35; --surface-2:#1a2340; --ink:#e4e9f5; --muted:#97a2c2; --line:#2a3556;
+  --navy:#0f1730; --navy-2:#24305c; --navy-ink:#eef1fa; --navy-muted:#97a3cc;
+  --accent:#4cb0d1; --accent-ink:#06202b; --accent-soft:#14364a;
+  --ok:#6cc893; --ok-soft:#163927; --warn:#e6a95b; --warn-soft:#3b2b14; --bad:#ef8b8b; --bad-soft:#432026;
+  --sea:#14223d; --land:#22314f; --route:#4cb0d1; --fx-remain:#8792b8; --plane:#f1f4fb; --grid:rgba(200,212,245,.10); --tile-filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.88);
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c1223; --surface:#151d35; --surface-2:#1a2340; --ink:#e4e9f5; --muted:#97a2c2; --line:#2a3556;
+  --navy:#0f1730; --navy-2:#24305c; --navy-ink:#eef1fa; --navy-muted:#97a3cc;
+  --accent:#4cb0d1; --accent-ink:#06202b; --accent-soft:#14364a;
+  --ok:#6cc893; --ok-soft:#163927; --warn:#e6a95b; --warn-soft:#3b2b14; --bad:#ef8b8b; --bad-soft:#432026;
+  --sea:#14223d; --land:#22314f; --route:#4cb0d1; --fx-remain:#8792b8; --plane:#f1f4fb; --grid:rgba(200,212,245,.10); --tile-filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.88);
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25); color-scheme:dark}
+*{box-sizing:border-box}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+[hidden]{display:none!important}
+img{max-width:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+h1,h2,h3{text-wrap:balance;margin:0;line-height:1.3}
+p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+/* 시연 바 */
+.demo-bar{background:var(--navy);color:var(--navy-ink);padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.demo-bar .home{color:var(--navy-muted);text-decoration:none;font-size:13px;border:1px solid var(--navy-2);padding:5px 10px;border-radius:8px}
+.demo-bar .home:hover{color:var(--navy-ink)}
+.demo-bar .brand{font-weight:700;letter-spacing:.04em;font-size:16px}
+.demo-bar .brand small{font-weight:500;color:var(--navy-muted);letter-spacing:0;margin-left:6px;font-size:12px}
+.demo-tag{font-size:12px;padding:3px 9px;border-radius:99px;background:var(--navy-2);color:var(--navy-muted)}
+.demo-bar .sp{flex:1}
+.seg{display:inline-flex;background:var(--navy-2);border-radius:10px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;color:var(--navy-muted);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:13px}
+.seg button.on{background:var(--navy-ink);color:var(--navy)}
+.demo-bar .btn-reset{background:transparent;border:1px solid var(--navy-muted);color:var(--navy-ink);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer}
+.demo-bar .btn-reset.confirm{background:var(--bad);border-color:var(--bad);color:#fff}
+
+.stage{padding-block:18px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:18px;align-items:start}
+.stage.split{grid-template-columns:1fr}
+@media (min-width:1080px){.stage.split{grid-template-columns:minmax(0,1.55fr) minmax(360px,1fr)}}
+.stage.single{max-width:1180px;margin:0 auto}
+.pane{container-type:inline-size;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:clip;box-shadow:var(--shadow)}
+.pane-bar{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--line);background:var(--surface-2);font-size:13px}
+.pane-bar .who{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* 상단 연결 상태 표시 — 토스트는 사라지므로 항상 보이는 표시를 둡니다 */
+.conn{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;
+  padding:4px 10px;border-radius:99px;white-space:nowrap;
+  background:rgba(255,255,255,.10);color:var(--navy-muted)}
+.conn i{width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
+.conn.c-live{background:var(--ok-soft);color:var(--ok)}
+.conn.c-connecting{background:var(--warn-soft);color:var(--warn)}
+.conn.c-error{background:rgba(255,120,120,.18);color:#ffb4b4}
+@media (max-width:720px){.conn{font-size:11px;padding:3px 8px}}
+
+.role-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.r-guardian{background:var(--accent)} .r-crew{background:var(--navy-2)} .r-admin{background:var(--warn)} .r-ground{background:var(--ok)}
+
+/* ===== 인수 코드 (지상직원 업무 추가 없이 최종 인계를 확인하는 장치) ===== */
+.pc-code{font-family:var(--font-mono);font-size:34px;font-weight:600;letter-spacing:.18em;
+  text-align:center;padding:18px 10px;border-radius:14px;background:var(--surface-2);
+  border:1px dashed var(--accent);color:var(--accent);word-break:break-all}
+.pc-code.used{border-style:solid;border-color:var(--ok);color:var(--ok);background:var(--ok-soft)}
+.pc-meta{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.pc-in{font-family:var(--font-mono);font-size:26px;letter-spacing:.16em;text-align:center}
+.pc-done{display:grid;gap:10px;place-items:center;text-align:center;padding:26px 16px}
+.pc-done .mark{width:62px;height:62px;border-radius:50%;background:var(--ok-soft);color:var(--ok);
+  display:grid;place-items:center;font-size:30px;font-weight:700}
+
+/* 공통 컴포넌트 */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:10px;padding:10px 16px;font-weight:600;font-size:14px;cursor:pointer;border:1px solid transparent;text-decoration:none;min-height:42px}
+.btn-primary{background:var(--accent);color:var(--accent-ink)}
+.btn-navy{background:var(--navy);color:var(--navy-ink)}
+.btn-line{background:var(--surface);border-color:var(--line);color:var(--ink)}
+.btn-line.accent{border-color:var(--accent);color:var(--accent)}
+.btn-ghost{background:transparent;color:var(--accent);padding:6px 8px;min-height:0}
+.btn-danger{background:var(--bad);color:#fff}
+.btn-sm{padding:6px 11px;min-height:32px;font-size:13px;border-radius:8px}
+.btn-block{width:100%}
+.btn[disabled],.btn.is-off{opacity:.45;cursor:not-allowed}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:3px 10px;border-radius:99px;white-space:nowrap;background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
+.pill.ok{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.pill.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.pill.bad{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.pill.accent{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+.pill.sim{background:transparent;border-style:dashed;font-weight:500}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.card.soft{background:var(--surface-2)}
+.stack{display:grid;gap:12px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.row.between{justify-content:space-between}
+.sec-title{font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.eyebrow{font-size:12px;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.note{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--muted);background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.note.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.note.bad{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.note.ok{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.note .i{flex:none;width:16px;height:16px;border-radius:50%;border:1.5px solid currentColor;font-size:11px;line-height:13px;text-align:center;font-weight:700;margin-top:2px}
+.chip{border:1px solid var(--line);background:var(--surface);padding:8px 14px;border-radius:99px;cursor:pointer;font-size:14px}
+.chip.on{background:var(--navy);color:var(--navy-ink);border-color:var(--navy)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.field{display:grid;gap:6px}
+.field label,.lbl{font-size:13px;font-weight:600;color:var(--muted)}
+.input{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px;min-height:42px}
+textarea.input{min-height:72px;resize:vertical}
+.check{display:flex;gap:10px;align-items:flex-start;cursor:pointer;padding:10px 0}
+.check input{width:20px;height:20px;accent-color:var(--accent);flex:none;margin:1px 0 0}
+.divider{border:0;border-top:1px dashed var(--line);margin:0}
+.empty{text-align:center;padding:28px 16px;color:var(--muted);font-size:14px;border:1px dashed var(--line);border-radius:var(--r)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14px}
+.kv dt{color:var(--muted)} .kv dd{margin:0;text-align:right}
+.badge{min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--bad);color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r)}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:560px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface-2);font-weight:600;color:var(--muted);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+
+/* 로그인 */
+.login{padding:28px 20px;display:grid;gap:18px;max-width:560px;margin:0 auto}
+.login h2{font-size:24px}
+.acct{display:flex;gap:14px;align-items:center;text-align:left;width:100%;padding:14px 16px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);cursor:pointer}
+.acct:hover{border-color:var(--accent)}
+.acct .ic{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;font-weight:700;color:#fff;flex:none}
+.acct .t{flex:1;min-width:0}
+.acct .t b{display:block}
+.acct .t span{font-size:13px;color:var(--muted)}
+
+/* 보호자 앱 */
+.g-app{max-width:480px;margin:0 auto;display:flex;flex-direction:column;min-height:640px;background:var(--bg)}
+.g-top{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--surface);border-bottom:1px solid var(--line)}
+.g-top .logo{font-weight:700;color:var(--navy);letter-spacing:.02em}
+:root[data-theme="dark"] .g-top .logo{color:var(--ink)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .g-top .logo{color:var(--ink)}}
+.g-top .kid{flex:1;font-size:13px;color:var(--muted);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.icon-btn{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;cursor:pointer;flex:none}
+.icon-btn svg{width:18px;height:18px}
+.g-main{flex:1;padding:16px;display:grid;gap:16px;align-content:start}
+.g-tabs{position:sticky;bottom:0;display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.g-tabs button{border:0;background:transparent;padding:9px 2px 10px;font-size:12px;color:var(--muted);cursor:pointer;display:grid;justify-items:center;gap:3px;position:relative}
+.g-tabs button svg{width:20px;height:20px}
+.g-tabs button.on{color:var(--accent);font-weight:700}
+.g-tabs .badge{position:absolute;top:4px;left:calc(50% + 6px)}
+.sub-top{display:flex;align-items:center;gap:8px;padding:12px 12px;background:var(--surface);border-bottom:1px solid var(--line)}
+.sub-top h2{font-size:18px;flex:1}
+.back{border:0;background:transparent;cursor:pointer;padding:6px;display:grid;place-items:center;border-radius:8px}
+.back svg{width:22px;height:22px}
+
+.hero{background:var(--navy);color:var(--navy-ink);border-radius:16px;padding:18px;display:grid;gap:14px}
+.hero .eyebrow{color:var(--navy-muted)}
+.hero h1{font-size:24px}
+.hero .age{font-size:15px;font-weight:500;color:var(--navy-muted)}
+.hero-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.strip{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;background:var(--navy-2);border-radius:12px;padding:12px 14px}
+.strip .code{font-family:var(--font-mono);font-size:24px;font-weight:600;line-height:1}
+.strip .city{font-size:12px;color:var(--navy-muted)}
+.strip .end{text-align:right}
+.strip .mid{display:grid;justify-items:center;gap:9px;font-size:11px;color:var(--navy-muted);min-width:0}
+.strip .line{width:100%;height:0;border-top:1.5px dashed var(--navy-muted);position:relative}
+.strip .line svg{position:absolute;left:50%;top:-9px;width:18px;height:18px;transform:translateX(-50%) rotate(90deg);fill:var(--navy-ink)}
+.now{background:var(--surface);color:var(--ink);border-radius:12px;padding:12px 14px}
+.now-label{font-size:12px;color:var(--muted);font-weight:600}
+.now-title{font-size:19px;font-weight:700}
+.now-sub{font-size:14px;color:var(--muted)}
+.meta-row{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--navy-muted)}
+.meta-row b{color:var(--navy-ink)}
+
+.tl{display:grid;gap:0;padding-left:4px}
+.tl-item{display:grid;grid-template-columns:22px 1fr auto;gap:12px;position:relative;padding-bottom:16px}
+.tl-item:last-child{padding-bottom:0}
+.tl-item::before{content:"";position:absolute;left:10px;top:22px;bottom:0;border-left:2px solid var(--line)}
+.tl-item:last-child::before{display:none}
+.tl-item.done::before{border-color:var(--accent)}
+.tl-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);background:var(--surface);display:grid;place-items:center;z-index:1}
+.tl-item.done .tl-dot{background:var(--accent);border-color:var(--accent)}
+.tl-item.done .tl-dot svg{width:12px;height:12px;stroke:var(--accent-ink)}
+.tl-item.cur .tl-dot{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.tl-item.cur .tl-dot::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.tl-t{font-weight:600;font-size:15px}
+.tl-d{font-size:13px;color:var(--muted)}
+.tl-item.todo .tl-t{color:var(--muted);font-weight:500}
+.tl-s{font-size:12px;font-weight:600;padding-top:2px}
+.tl-item.done .tl-s{color:var(--ok)} .tl-item.cur .tl-s{color:var(--accent)} .tl-item.todo .tl-s{color:var(--muted)}
+
+.ho{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:10px 0;border-bottom:1px dashed var(--line)}
+.ho:last-child{border-bottom:0}
+.ho .who{font-weight:600;font-size:14px}
+.ho .meta{font-size:12px;color:var(--muted);grid-column:1/-1}
+
+.map{width:100%;height:auto;display:block;border-radius:12px;background:var(--sea)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px}
+.stat .k{font-size:12px;color:var(--muted)}
+.stat .v{font-weight:700;font-size:17px}
+.progress{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.progress i{display:block;height:100%;background:var(--accent)}
+
+.loc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.loc{border:1px solid var(--line);border-radius:10px;padding:10px 4px;text-align:center;font-size:13px;color:var(--muted);background:var(--surface)}
+.loc.on{background:var(--navy);color:var(--navy-ink);border-color:var(--navy);font-weight:600}
+.svc{display:grid;grid-template-columns:1fr auto;padding:10px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.svc:last-child{border-bottom:0}
+.feed{display:grid;gap:0}
+.feed div{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.feed div:last-child{border-bottom:0}
+
+.ntabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.ntabs button{flex:none}
+.noti{display:grid;grid-template-columns:auto 1fr auto;gap:10px;padding:14px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);text-align:left;cursor:pointer;width:100%}
+.noti.unread{border-color:var(--accent);background:var(--accent-soft)}
+.noti .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);margin-top:7px}
+.noti:not(.unread) .dot{background:transparent}
+.noti b{display:block;font-size:14px}
+.noti p{font-size:13px;color:var(--muted)}
+/* 알림을 누르면 관련 화면으로 이동해요. 어디로 가는지 미리 보여 줍니다. */
+.noti-go{display:inline-flex;align-items:center;gap:4px;margin-top:6px;font-size:12px;
+  font-weight:600;color:var(--accent)}
+.noti:hover .noti-go{text-decoration:underline}
+.noti:active{transform:scale(.995)}
+.noti time{font-size:12px;color:var(--muted)}
+.switch{position:relative;width:46px;height:26px;flex:none;border-radius:13px;border:0;background:var(--line);cursor:pointer}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .15s}
+.switch.on{background:var(--accent)}
+.switch.on::after{left:23px}
+
+.media-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.thumb{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;border:0;padding:0;cursor:pointer;background:var(--line);max-width:100%}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb.locked img{filter:blur(2.5px) saturate(.8)}
+.thumb .wm{position:absolute;inset:auto 4px 4px auto;font-size:10px;font-weight:700;background:rgba(15,23,48,.72);color:#fff;padding:2px 6px;border-radius:5px}
+.thumb .play{position:absolute;inset:0;display:grid;place-items:center}
+.thumb .play span{width:30px;height:30px;border-radius:50%;background:rgba(15,23,48,.7);display:grid;place-items:center}
+.thumb .play svg{width:12px;height:12px;fill:#fff}
+.thumb.sel{outline:3px solid var(--accent);outline-offset:-3px}
+.thumb .selno{position:absolute;top:5px;left:5px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-size:12px;font-weight:700;display:grid;place-items:center}
+.grp-title{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:6px}
+.viewer-img{position:relative;border-radius:12px;overflow:hidden;background:#000}
+.viewer-img img{width:100%;display:block}
+.viewer-img.locked img{filter:blur(6px)}
+.viewer-img .lockmsg{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#fff;font-weight:600;padding:20px;background:rgba(10,16,34,.45)}
+.kenburns img{animation:kb 8s ease-in-out infinite alternate}
+@keyframes kb{from{transform:scale(1)}to{transform:scale(1.12) translate(-3%,-2%)}}
+.slideshow{position:relative;aspect-ratio:4/3;max-width:100%;border-radius:12px;overflow:hidden;background:#0b1020}
+.slideshow img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0}
+.slideshow .cap{position:absolute;left:0;right:0;bottom:0;padding:14px;color:#fff;font-weight:700;background:linear-gradient(transparent,rgba(0,0,0,.65))}
+
+.prod{display:grid;gap:10px}
+.prod-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.price{font-family:var(--font-mono);font-weight:600;font-size:18px;white-space:nowrap}
+.req{display:flex;flex-wrap:wrap;gap:6px}
+.steps{display:flex;gap:6px;flex-wrap:wrap;font-size:12px}
+.steps span{padding:3px 8px;border-radius:6px;background:var(--surface-2);color:var(--muted)}
+.steps span.on{background:var(--accent-soft);color:var(--accent);font-weight:700}
+.hist{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+.hist div{display:flex;gap:10px}
+.hist .mono{flex:none}
+
+.cl-box{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;gap:10px}
+.cl-title{font-weight:700;color:var(--navy);text-align:center;font-size:18px;border:0;background:transparent;width:100%;padding:4px}
+:root[data-theme="dark"] .cl-title{color:var(--ink)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .cl-title{color:var(--ink)}}
+.cl-canvas{position:relative;width:100%;aspect-ratio:5/4;max-width:100%}
+.cl-canvas .cell{position:absolute;border-radius:8px;overflow:hidden;background:var(--line)}
+.cl-canvas .cell img{width:100%;height:100%;object-fit:cover;display:block}
+.cl-canvas .cell.round{border-radius:50%;border:3px solid var(--surface);box-shadow:var(--shadow)}
+.cl-canvas svg{position:absolute;inset:0;width:100%;height:100%}
+.cl-foot{text-align:center;font-size:13px;color:var(--muted)}
+.style-opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.style-opt{border:1px solid var(--line);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;background:var(--surface);font-size:13px}
+.style-opt.on{border:2px solid var(--accent);color:var(--accent);font-weight:700}
+.sticky-actions{position:sticky;bottom:0;display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 16px;background:var(--surface);border-top:1px solid var(--line)}
+
+/* 승무원 앱 */
+.crew{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:680px}
+.c-side{background:var(--navy);color:var(--navy-ink);padding:18px 12px;display:flex;flex-direction:column;gap:6px}
+.c-brand{padding:4px 8px 14px}
+.c-brand b{font-size:18px;display:block}
+.c-brand span{font-size:12px;color:var(--navy-muted)}
+.c-nav{display:grid;gap:4px}
+.c-nav button{display:flex;gap:10px;align-items:center;border:0;background:transparent;color:var(--navy-muted);padding:11px 12px;border-radius:10px;cursor:pointer;text-align:left;font-size:14px}
+.c-nav button svg{width:18px;height:18px;flex:none}
+.c-nav button.on{background:var(--accent);color:#fff;font-weight:700}
+.c-net{margin-top:auto;background:var(--navy-2);border-radius:12px;padding:12px;font-size:13px;display:grid;gap:8px}
+.c-net .row{gap:8px;flex-wrap:nowrap}
+.c-net .lbl2{flex:1}
+.c-net .off{color:#ffc58a}
+.c-main{min-width:0;background:var(--bg);display:flex;flex-direction:column}
+.c-head{display:flex;align-items:center;gap:12px;justify-content:space-between;padding:16px 20px;background:var(--surface);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.c-head h2{font-size:19px;color:var(--navy)}
+:root[data-theme="dark"] .c-head h2{color:var(--ink)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .c-head h2{color:var(--ink)}}
+.c-body{padding:18px 20px;display:grid;gap:16px;align-content:start}
+.c-cols{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px;align-items:start}
+.um-card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center}
+.um-card .nm{font-weight:700;font-size:16px}
+.um-pick{display:flex;gap:6px;flex-wrap:wrap}
+.um-pick button{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 14px;cursor:pointer;font-size:14px}
+.um-pick button.on{border-color:var(--navy);background:var(--navy);color:var(--navy-ink);font-weight:600}
+.todo{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px dashed var(--line);font-size:14px;width:100%;background:transparent;border-left:0;border-right:0;border-top:0;text-align:left;cursor:pointer}
+.todo:last-child{border-bottom:0}
+.todo .box{width:18px;height:18px;border:2px solid var(--line);border-radius:5px;flex:none}
+.todo .go{margin-left:auto;color:var(--accent);font-size:13px;font-weight:600;white-space:nowrap}
+.grp{display:grid;gap:8px}
+.preview-card{border-left:3px solid var(--accent);background:var(--surface-2);border-radius:8px;padding:12px}
+.viewfinder{position:relative;aspect-ratio:4/3;border:2px dashed var(--muted);border-radius:14px;overflow:hidden;background:var(--surface-2);display:grid;place-items:center;max-width:100%}
+.viewfinder img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.viewfinder .vf-label{position:absolute;top:10px;left:10px;font-size:12px;background:rgba(15,23,48,.7);color:#fff;padding:3px 8px;border-radius:6px}
+.viewfinder .blocked{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:20px;background:var(--surface-2);color:var(--muted);font-weight:600}
+.shutter-row{display:flex;justify-content:center;align-items:center;gap:16px;flex-wrap:wrap}
+.shutter{width:68px;height:68px;border-radius:50%;border:4px solid var(--accent);background:var(--surface);cursor:pointer}
+.shutter:active{transform:scale(.95)}
+.shutter[disabled]{border-color:var(--line);cursor:not-allowed}
+.mode{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:9px 18px;cursor:pointer}
+.mode.on{background:var(--navy);color:var(--navy-ink);border-color:var(--navy);font-weight:600}
+.q{display:grid;grid-template-columns:60px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px dashed var(--line)}
+.q:last-child{border-bottom:0}
+.q img{width:60px;height:60px;border-radius:8px;object-fit:cover;display:block}
+.q b{font-size:14px}
+.q .st{font-size:12px}
+.st.ok{color:var(--ok)} .st.warn{color:var(--warn)} .st.bad{color:var(--bad)} .st.muted{color:var(--muted)}
+.hstep{display:grid;grid-template-columns:36px 1fr;gap:12px;align-items:start}
+.hstep .n{width:36px;height:36px;border-radius:50%;border:3px solid var(--line);display:grid;place-items:center;background:var(--surface)}
+.hstep.done .n{background:var(--accent);border-color:var(--accent)}
+.hstep.done .n svg{width:16px;height:16px;stroke:#fff}
+.hstep.cur{border:2px solid var(--accent)}
+.hstep.cur .n{border-color:var(--accent)}
+.hstep h3{font-size:16px}
+.qr{border:2px dashed var(--muted);border-radius:12px;display:grid;place-items:center;aspect-ratio:1;max-width:150px;width:100%;background:var(--surface-2);font-weight:700;color:var(--muted);cursor:pointer;padding:8px;text-align:center}
+.qr.got{border-style:solid;border-color:var(--ok);color:var(--ok);background:var(--ok-soft)}
+.ho-grid{display:grid;grid-template-columns:150px minmax(0,1fr);gap:16px;align-items:start}
+
+/* 관리자 */
+.admin{display:grid;min-height:600px}
+.a-tabs{display:flex;gap:4px;overflow-x:auto;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--surface)}
+.a-tabs button{flex:none;border:0;background:transparent;padding:8px 12px;border-radius:8px;cursor:pointer;color:var(--muted);font-size:14px}
+.a-tabs button.on{background:var(--accent-soft);color:var(--accent);font-weight:700}
+.a-body{padding:18px;display:grid;gap:16px;background:var(--bg);align-content:start}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.tile .k{font-size:12px;color:var(--muted)}
+.tile .v{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.perm-y{color:var(--ok);font-weight:700}
+.perm-n{color:var(--muted)}
+
+
+/* Leaflet 1.9.4 핵심 스타일(외부 CSS를 불러올 수 없어 필요한 부분만 인라인) */
+.leaflet-pane,.leaflet-tile,.leaflet-marker-icon,.leaflet-marker-shadow,.leaflet-tile-container,.leaflet-pane>svg,.leaflet-pane>canvas,.leaflet-zoom-box,.leaflet-image-layer,.leaflet-layer{position:absolute;left:0;top:0}
+.leaflet-container{overflow:hidden;font-family:var(--font-body);-webkit-tap-highlight-color:transparent;background:var(--sea);outline-offset:1px}
+.leaflet-tile,.leaflet-marker-icon,.leaflet-marker-shadow{-webkit-user-select:none;user-select:none;-webkit-user-drag:none}
+.leaflet-container img.leaflet-tile,.leaflet-container .leaflet-marker-pane img{max-width:none!important;max-height:none!important;width:auto;padding:0}
+.leaflet-container.leaflet-touch-zoom{touch-action:pan-x pan-y}
+.leaflet-container.leaflet-touch-drag{touch-action:none}
+.leaflet-container.leaflet-touch-drag.leaflet-touch-zoom{touch-action:none}
+.leaflet-tile{filter:inherit;visibility:hidden}
+.leaflet-tile-loaded{visibility:inherit}
+.leaflet-pane{z-index:400}.leaflet-tile-pane{z-index:200;filter:var(--tile-filter)}.leaflet-overlay-pane{z-index:400}.leaflet-shadow-pane{z-index:500}.leaflet-marker-pane{z-index:600}.leaflet-tooltip-pane{z-index:650}.leaflet-popup-pane{z-index:700}
+.leaflet-map-pane canvas{z-index:100}.leaflet-map-pane svg{z-index:200}
+.leaflet-control{position:relative;z-index:800;pointer-events:auto;float:left;clear:both}
+.leaflet-top,.leaflet-bottom{position:absolute;z-index:1000;pointer-events:none}
+.leaflet-top{top:0}.leaflet-right{right:0}.leaflet-bottom{bottom:0}.leaflet-left{left:0}
+.leaflet-right .leaflet-control{float:right}
+.leaflet-zoom-animated{transform-origin:0 0}
+.leaflet-zoom-anim .leaflet-zoom-animated{transition:transform .25s cubic-bezier(0,0,.25,1)}
+.leaflet-zoom-anim .leaflet-tile,.leaflet-pan-anim .leaflet-tile{transition:none}
+.leaflet-zoom-anim .leaflet-zoom-hide{visibility:hidden}
+.leaflet-grab{cursor:grab}.leaflet-dragging .leaflet-grab{cursor:move}
+.leaflet-marker-icon,.leaflet-image-layer,.leaflet-pane>svg path,.leaflet-tile-container{pointer-events:none}
+.leaflet-control-attribution{background:rgba(255,255,255,.8);color:#333;font-size:10px;line-height:1.4;padding:0 5px;margin:0}
+.leaflet-control-attribution a{color:#0b5f7b;text-decoration:none}
+
+/* 비행 여정 · 항공기 이동 지도 */
+.fx-slot{height:clamp(240px,62cqw,320px);border-radius:12px;background:var(--sea)}
+.fx-mapbox{position:relative;height:clamp(240px,62cqw,320px);border-radius:12px;overflow:hidden;background:var(--sea);isolation:isolate;border:1px solid var(--line)}
+.fx-canvas{position:absolute;inset:0}
+.fx-canvas.svg svg{width:100%;height:100%;display:block}
+.fx-badge{position:absolute;left:10px;top:10px;z-index:1001;font-size:11px;font-weight:700;background:var(--navy);color:var(--navy-ink);padding:3px 9px;border-radius:99px;pointer-events:none}
+.fx-reason{position:absolute;left:10px;top:36px;z-index:1001;font-size:11px;font-weight:600;background:var(--warn-soft);color:var(--warn);padding:3px 8px;border-radius:8px;max-width:calc(100% - 20px);pointer-events:none}
+.fx-tools{position:absolute;right:10px;top:10px;z-index:1001;display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;max-width:60%}
+.fx-tool{font:inherit;font-size:12px;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:4px 9px;min-height:28px;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.fx-tool.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.fx-tool.sq{width:28px;padding:0;font-size:16px;line-height:1}
+.fx-legend{position:absolute;left:8px;bottom:8px;z-index:1001;display:flex;gap:4px 10px;flex-wrap:wrap;font-size:11px;color:var(--ink);background:var(--surface);opacity:.92;padding:3px 8px;border-radius:8px;max-width:calc(100% - 110px);pointer-events:none}
+.fx-legend span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.fx-legend i{display:inline-block;width:16px;height:0;border-top:3px solid var(--route)}
+.fx-legend i.l2{border-top:2px dashed var(--fx-remain)}
+.fx-legend svg{width:12px;height:12px;fill:var(--plane)}
+.fx-flown{stroke:var(--route);fill:none}
+.fx-remain{stroke:var(--fx-remain);fill:none}
+.fx-plane{width:36px;height:36px;display:grid;place-items:center;will-change:transform}
+.fx-plane svg{width:30px;height:30px;fill:var(--plane);stroke:var(--surface);stroke-width:1.1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
+.fx-ap{position:relative}
+.fx-ap .d{display:block;width:12px;height:12px;border-radius:50%;background:var(--accent);border:2px solid var(--surface);box-shadow:0 0 0 1px var(--accent)}
+.fx-ap b{position:absolute;top:-4px;font-family:var(--font-mono);font-size:12px;color:var(--ink);background:var(--surface);padding:0 4px;border-radius:4px;white-space:nowrap}
+.fx-ap.l b{left:16px}.fx-ap.r b{right:16px}
+.fx-ctrl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.fx-ctrl .btn{min-width:0}
+.fx-speed{display:inline-flex;margin-left:auto;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.fx-speed button{border:0;background:var(--surface);padding:6px 10px;font-size:12px;cursor:pointer;color:var(--muted);min-height:32px}
+.fx-speed button.on{background:var(--navy);color:var(--navy-ink);font-weight:600}
+.fx-range{width:100%;accent-color:var(--accent);margin:0}
+.sim-tag{font-size:10px;font-weight:600;color:var(--muted);border:1px dashed var(--line);border-radius:5px;padding:0 4px;margin-left:4px;vertical-align:1px}
+.fx-svg-grid{stroke:var(--grid);stroke-width:1}
+.fx-svg-lbl{fill:var(--muted);font-size:9px;font-family:var(--font-mono)}
+.fx-svg-dl{stroke:var(--accent);stroke-width:1;stroke-dasharray:3 4;opacity:.6}
+.fx-svg-ap{fill:var(--accent);stroke:var(--surface);stroke-width:2}
+.fx-svg-code{fill:var(--ink);font-size:12px;font-weight:600;font-family:var(--font-mono)}
+.fx-svg-plane{fill:var(--plane);stroke:var(--surface);stroke-width:1.1}
+
+/* 토스트 */
+#toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));display:grid;gap:8px;z-index:50;width:min(420px,calc(100vw - 32px));pointer-events:none}
+.toast{background:var(--navy);color:var(--navy-ink);padding:11px 14px;border-radius:12px;box-shadow:var(--shadow);font-size:14px;animation:tin .2s ease-out}
+.toast.err{background:var(--bad);color:#fff}
+.toast small{display:block;color:var(--navy-muted);font-size:11px}
+.toast.err small{color:#ffe1e1}
+@keyframes tin{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+
+@container (max-width:900px){ .c-cols{grid-template-columns:1fr} }
+@container (max-width:620px){
+  .crew{grid-template-columns:1fr}
+  /* min-width:0 이 없으면 아래 overflow-x:auto 가 무력화되고
+     내용이 부모(.pane)를 밀어내 화면 밖으로 잘립니다. */
+  .c-side{flex-direction:column;padding:12px;min-width:0}
+  .c-brand{padding:0 4px 6px;min-width:0}
+  .c-nav{grid-auto-flow:column;grid-auto-columns:max-content;overflow-x:auto;min-width:0;
+         scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+  .c-net{margin-top:6px;min-width:0}
+  .c-cols{grid-template-columns:1fr}
+}
+@container (max-width:460px){
+  .ho-grid{grid-template-columns:1fr}
+  .c-body{padding:14px}
+  .stats{grid-template-columns:1fr 1fr}
+  .loc-grid{grid-template-columns:repeat(2,1fr)}
+  .stats .stat:nth-child(3):last-child{grid-column:1/-1}
+}
+</style>
+</head>
+<body>
+
+
+<div id="app"></div>
+<div id="toasts" aria-live="polite"></div>
+
+<!-- 여정 영상 엔진 (UMFlightJourney) -->
+<script src="flight-journey.js"></script>
+
+<!-- ============================================================
+     DB 레이어 (기능별 모듈)
+     설정은 src/db/config.js 한 곳에서만 하면 됩니다.
+     비워두면 기존과 똑같이 브라우저 저장소만 사용합니다.
+     ============================================================ -->
+<script src="src/db/config.js"></script>
+<script src="src/db/local-adapter.js"></script>
+<script src="src/db/supabase-adapter.js"></script>
+<script src="src/db/mirror.js"></script>
+<script src="src/db/index.js"></script>
+
+<script>
+(() => {
+'use strict';
+/* ========== 유틸 ========== */
+const KEY = 'umlink.demo.v6';
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = p => p + '_' + Math.random().toString(36).slice(2, 9);
+const nowISO = () => new Date().toISOString();
+const hm = iso => { if (!iso) return '--:--'; const d = new Date(iso); return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); };
+const won = n => '₩' + Number(n).toLocaleString('ko-KR');
+const minsSince = iso => Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+const addMin = (iso, m) => new Date(new Date(iso).getTime() + m * 60000).toISOString();
+const getPath = (o, path) => path.split('.').reduce((a, k) => (a == null ? undefined : a[k]), o);
+const setPath = (o, path, v) => { const ks = path.split('.'); let a = o; ks.slice(0, -1).forEach(k => { if (a[k] == null || typeof a[k] !== 'object') a[k] = {}; a = a[k]; }); a[ks[ks.length - 1]] = v; };
+const I = {
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
+  gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+  home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>',
+  plane: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M10.5 3.5c0-.8.7-1.5 1.5-1.5s1.5.7 1.5 1.5V9l8 4.5V16l-8-2.5V19l2.5 2v1.5L12 21.5l-4 1V21l2.5-2v-5.5L2.5 16v-2.5l8-4.5z"/></svg>',
+  live: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M5.6 5.6a9 9 0 0 0 0 12.8M18.4 5.6a9 9 0 0 1 0 12.8M8.5 8.5a5 5 0 0 0 0 7M15.5 8.5a5 5 0 0 1 0 7"/></svg>',
+  bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M6 16V11a6 6 0 1 1 12 0v5l2 2H4zM10 21h4"/></svg>',
+  photo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="2"/><circle cx="9" cy="10.5" r="1.8"/><path d="M21 16l-5-5-8 9"/></svg>',
+  list: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>',
+  clip: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 13l2 2 4-4"/></svg>',
+  cam: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></svg>',
+  flag: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 21V4h11l-2 4 2 4H5"/></svg>',
+  play: '<svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>',
+  planeSolid: '<svg viewBox="0 0 24 24"><path d="M10.5 3.5c0-.8.7-1.5 1.5-1.5s1.5.7 1.5 1.5V9l8 4.5V16l-8-2.5V19l2.5 2v1.5L12 21.5l-4 1V21l2.5-2v-5.5L2.5 16v-2.5l8-4.5z"/></svg>',
+};
+
+/* ========== 가상 이미지 생성(실제 아동 사진 없음) ========== */
+function rng(seed){ let s = seed % 2147483647; if (s <= 0) s += 2147483646; return () => (s = s * 16807 % 2147483647) / 2147483647; }
+function cloud(ctx, x, y, r, a){ ctx.fillStyle = `rgba(255,255,255,${a})`; [[0,0,1],[r*.9,-r*.35,.8],[r*1.7,0,.9],[r*.8,r*.25,.9]].forEach(([dx,dy,k]) => { ctx.beginPath(); ctx.arc(x+dx, y+dy, r*k, 0, 7); ctx.fill(); }); }
+function planeShape(ctx, x, y, s, color){ ctx.save(); ctx.translate(x, y); ctx.scale(s, s); ctx.fillStyle = color; ctx.beginPath(); ctx.ellipse(0,0,60,8,0,0,7); ctx.fill(); ctx.beginPath(); ctx.moveTo(-5,0); ctx.lineTo(-25,40); ctx.lineTo(-12,40); ctx.lineTo(15,0); ctx.fill(); ctx.beginPath(); ctx.moveTo(-45,-2); ctx.lineTo(-58,-24); ctx.lineTo(-50,-24); ctx.lineTo(-35,-2); ctx.fill(); ctx.restore(); }
+function genScene(kind, seed){
+  const W = 640, H = 480, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const ctx = c.getContext('2d'); const r = rng(seed || 7);
+  const grad = (stops) => { const g = ctx.createLinearGradient(0,0,0,H); stops.forEach((s,i) => g.addColorStop(i/(stops.length-1), s)); return g; };
+  if (kind === 'meal') {
+    ctx.fillStyle = '#3b4762'; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = '#d9d2c3'; ctx.beginPath(); ctx.roundRect(70,60,500,360,24); ctx.fill();
+    ctx.fillStyle = '#f4f1ea'; ctx.beginPath(); ctx.arc(250,240,120,0,7); ctx.fill();
+    ctx.fillStyle = '#e8b04c'; ctx.beginPath(); ctx.ellipse(225,215,55,40,0,0,7); ctx.fill();
+    ctx.fillStyle = '#6aa457'; for (let i=0;i<7;i++){ ctx.beginPath(); ctx.arc(270+r()*60,250+r()*50,13,0,7); ctx.fill(); }
+    ctx.fillStyle = '#c4553f'; ctx.beginPath(); ctx.arc(205,285,22,0,7); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.roundRect(410,100,120,90,14); ctx.fill();
+    ctx.fillStyle = '#f0a8a0'; ctx.beginPath(); ctx.arc(470,145,30,0,7); ctx.fill();
+    ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(470,320,52,0,7); ctx.fill(); ctx.fillStyle = '#e48a2a'; ctx.beginPath(); ctx.arc(470,320,42,0,7); ctx.fill();
+  } else if (kind === 'window' || kind === 'clouds') {
+    ctx.fillStyle = '#c9ced8'; ctx.fillRect(0,0,W,H);
+    ctx.save(); ctx.beginPath(); ctx.roundRect(150,40,340,400,150); ctx.clip();
+    ctx.fillStyle = grad(kind === 'clouds' ? ['#2f6fb5','#7fb4e3','#f3d9b0'] : ['#3c7cc4','#93c4ea','#dbeefa']); ctx.fillRect(0,0,W,H);
+    for (let i=0;i<9;i++) cloud(ctx, 120+r()*360, 240+r()*170, 26+r()*30, .9);
+    ctx.fillStyle = '#e8ecf2'; ctx.beginPath(); ctx.moveTo(150,330); ctx.lineTo(520,250); ctx.lineTo(520,280); ctx.lineTo(150,380); ctx.fill();
+    ctx.restore();
+    ctx.lineWidth = 18; ctx.strokeStyle = '#aab2c0'; ctx.beginPath(); ctx.roundRect(150,40,340,400,150); ctx.stroke();
+  } else if (kind === 'arrival') {
+    ctx.fillStyle = grad(['#f19a5c','#f6c27e','#fbe3b8']); ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = '#fff3d6'; ctx.beginPath(); ctx.arc(470,190,46,0,7); ctx.fill();
+    ctx.fillStyle = '#4a4a5a'; ctx.fillRect(0,360,W,120);
+    ctx.strokeStyle = '#f5f0e0'; ctx.lineWidth = 6; ctx.setLineDash([30,24]); ctx.beginPath(); ctx.moveTo(0,420); ctx.lineTo(W,420); ctx.stroke(); ctx.setLineDash([]);
+    [[90,360],[160,360],[560,360]].forEach(([x,y]) => { ctx.strokeStyle = '#3b3340'; ctx.lineWidth = 8; ctx.beginPath(); ctx.moveTo(x,y); ctx.quadraticCurveTo(x+8,y-90,x,y-170); ctx.stroke(); ctx.fillStyle = '#3b3340'; for (let k=0;k<6;k++){ ctx.beginPath(); ctx.ellipse(x+Math.cos(k)*36,y-170+Math.sin(k*1.7)*10,40,9,k,0,7); ctx.fill(); } });
+    planeShape(ctx, 320, 120, 1.2, '#3b3340');
+  } else { /* terminal, gate */
+    ctx.fillStyle = grad(['#a9cbe8','#d9e9f5']); ctx.fillRect(0,0,W,H);
+    planeShape(ctx, 300 + r()*60, 210, kind === 'gate' ? 2.1 : 1.4, '#f2f4f8');
+    ctx.fillStyle = '#7c8696'; ctx.fillRect(0,300,W,180);
+    ctx.fillStyle = '#2e3446'; for (let x=0; x<=W; x+=128) ctx.fillRect(x,0,10,300); ctx.fillRect(0,0,W,16); ctx.fillRect(0,292,W,14);
+    ctx.fillStyle = '#c9cfd8'; ctx.fillRect(0,380,W,100);
+    ctx.fillStyle = '#1f2a5c'; for (let i=0;i<5;i++){ ctx.beginPath(); ctx.roundRect(40+i*120,400,90,40,8); ctx.fill(); }
+    ctx.fillStyle = '#ffd34d'; ctx.font = 'bold 28px monospace'; ctx.fillText(kind === 'gate' ? 'GATE 248' : 'DEPARTURES', 30, 60);
+  }
+  return c.toDataURL('image/jpeg', .74);
+}
+function downscale(dataUrl, max = 720){
+  return new Promise((res, rej) => { const img = new Image(); img.onload = () => { const k = Math.min(1, max / Math.max(img.width, img.height)); const c = document.createElement('canvas'); c.width = Math.round(img.width*k); c.height = Math.round(img.height*k); c.getContext('2d').drawImage(img,0,0,c.width,c.height); res(c.toDataURL('image/jpeg', .76)); }; img.onerror = rej; img.src = dataUrl; });
+}
+
+/* ========== 단계·코드 정의 ========== */
+const STAGES = [
+  { key:'register', label:'신청 · 여정 등록' },
+  { key:'checkin',  label:'체크인 · 첫 인계' },
+  { key:'security', label:'보안검색 · 이동' },
+  { key:'gate',     label:'디지털 인계', hint:'예정 · 직원 → 직원' },
+  { key:'board',    label:'탑승 완료', hint:'예정 · 승무원 확인' },
+  { key:'inflight', label:'기내 · 상태 리포트', hint:'예정 · 승무원 상태 리포트' },
+  { key:'landed',   label:'착륙 확인', hint:'예정 · 승무원 기록' },
+  { key:'ground',   label:'지상직원 인계', hint:'예정 · 승무원 → 지상직원' },
+  { key:'final',    label:'최종 인계', hint:'예정 · 마중 나온 사람 인증' },
+];
+const PHASES = { scheduled:'출발 전', boarding:'탑승 중', departed:'이륙 · 상승 중', cruise:'순항 중', descent:'강하 중', landed:'착륙 완료' };
+const PHASE_SIM = { scheduled:[0,0,0], boarding:[0,0,0], departed:[18000,640,6], cruise:[37000,905,45], descent:[11000,540,93], landed:[0,0,100] };
+const ORDER_STATUS = {
+  awaiting_payment:['테스트 결제 대기',''], payment_failed:['테스트 결제 실패','bad'],
+  waiting_consent:['동의 대기 · 제작 보류','warn'], waiting_media:['사진 대기 · 촬영 후 제작','warn'],
+  active:['이용 가능','ok'], ready_to_create:['제작 대기 · 직접 만들기','accent'],
+  producing:['AI 제작 중 (시뮬레이션)','accent'], ready:['제작 완료','ok'], refunded:['테스트 환불 처리','']
+};
+const PAY_STATUS = { none:'결제 전', test_approved:'테스트 승인 · 실제 청구 없음', test_failed:'테스트 거절', test_refunded:'테스트 환불' };
+const CONSENT_LABEL = { shoot:'사진·영상 촬영·보관', ai:'사진·영상 AI 처리' };
+const PERM = {
+  guardian: ['um.read','consent.write','order.write','media.read','media.delete','privacy.request','pickup.issue'],
+  crew:     ['um.read','status.write','stage.write','media.upload','handoff.write','consent.flags'],
+  admin:    ['flight.write','um.write','order.read','consent.read','privacy.process','demo.reset'],
+  /* 도착지 지상직원. 담당 항공편의 UM만 보이고, 할 수 있는 건 인수 확인 하나뿐이에요.
+     기존 에스코트 업무의 '인수자 신분 확인'을 디지털로 기록하는 화면이에요. */
+  ground:   ['um.read.limited','pickup.verify'],
+};
+
+/* ========== 항공편 데이터 ==========
+   항공편 검색 화면 기준: KE017 · ICN 14:30 출발 -> LAX 08:30 도착 · 비행시간 11시간 0분
+   출발·도착 시각은 각 공항의 현지 시각이에요. 시차가 있어 출발 시각 + 비행시간으로
+   계산하지 않고 그대로 써요. */
+const FLIGHT_KE017 = { no:'KE017', from:'ICN', fromCity:'인천', fromAirport:'인천국제공항', to:'LAX', toCity:'로스앤젤레스', toAirport:'로스앤젤레스 국제공항', depLocal:'14:30', arrLocal:'08:30', durationMin:660 };
+
+/* ========== 시드 데이터(모두 가상) ========== */
+function seed(){
+  const ago = m => new Date(Date.now() - m*60000).toISOString();
+  const S = {
+    ver: 6, rev: 0, seededAt: nowISO(),
+    net: { wifi: true, failUploads: false },
+    users: [
+      { id:'g1', role:'guardian', name:'김지은', relation:'모', umId:'um1', login:'guardian01', notify:true },
+      { id:'g2', role:'guardian', name:'이성호', relation:'부', umId:'um2', login:'guardian02', notify:true },
+      { id:'c1', role:'crew', name:'박서연', empNo:'C-20417', login:'crew01' },
+      { id:'a1', role:'admin', name:'운영 관리자', login:'admin' },
+      /* 도착지 지상직원. 마중 나온 가족은 이 시스템의 사용자가 아니에요.
+         가족은 보호자에게 받은 코드를 지상직원에게 보여주기만 해요. */
+      { id:'gs1', role:'ground', name:'Jordan Lee', org:'LAX 도착 서비스', empNo:'L-3307', flightId:'f1', login:'ground01' },
+    ],
+    staff: [
+      { id:'s1', name:'최민준', org:'인천공항 여객서비스', empNo:'G-1182' },
+      { id:'s2', name:'정하늘', org:'인천공항 탑승 지원', empNo:'G-1204' },
+      { id:'s3', name:'Jordan Lee', org:'LAX 도착 서비스', empNo:'L-3307' },
+    ],
+    flights: [{ id:'f1', ...FLIGHT_KE017, delayMin: 0, gate:'248', arrGate:'152', phase:'boarding', progress: 0 }],
+    ums: [
+      { id:'um1', code:'UM-0001', name:'하린', age:9, seat:'32A', flightId:'f1', guardians:['g1'], crewId:'c1', escortId:'s2', stage:4, pickup:'김지훈 (이모부)',
+        live:{ location:'게이트 대기', since: ago(14), sleep:null, mood:'좋아요', meal:null }, service:{}, lastStatusAt: ago(14), lastStatusText:'248번 게이트에서 탑승 대기' },
+      { id:'um2', code:'UM-0002', name:'도윤', age:7, seat:'32B', flightId:'f1', guardians:['g2'], crewId:'c1', escortId:'s2', stage:4, pickup:'이수민 (고모)',
+        live:{ location:'게이트 대기', since: ago(14), sleep:null, mood:'보통이에요', meal:null }, service:{}, lastStatusAt: ago(14), lastStatusText:'248번 게이트에서 탑승 대기' },
+    ],
+    events: [], handoffs: [], consents: [], media: [], orders: [], notifications: [], outbox: [], privacyRequests: [], pickupCodes: [],
+    products: [
+      { id:'p_photo', name:'여정 사진 패키지', price:9900, scope:'직원·승무원이 촬영한 사진·영상 원본 보기와 기기 저장 · 최대 30장', requires:['shoot'] },
+      { id:'p_collage', name:'AI 기념 콜라주', price:4900, scope:'고른 사진으로 AI 콜라주 1종 제작 · 문구 수정 · 아카이브 저장', requires:['shoot','ai'] },
+      { id:'p_video', name:'AI 기념 영상', price:12900, scope:'여정 사진을 이어 붙인 30초 기념 영상 1편 제작', requires:['shoot','ai'] },
+    ],
+  };
+  S.ums.forEach((m, i) => {
+    const g = S.users.find(u => u.id === m.guardians[0]);
+    S.events.push({ id:uid('ev'), umId:m.id, stage:0, kind:'stage', title:'여정 등록 완료', detail:'보호자 신청 · 서류 확인', by:'UM 데스크', at: ago(300 - i) });
+    S.handoffs.push({ id:uid('ho'), umId:m.id, stage:1, fromName:`${g.name} (보호자)`, toName:'최민준', toOrg:'인천공항 여객서비스', place:'체크인 카운터 C', method:'보호자 서명 · 직원 QR', at: ago(150 - i), status:'confirmed' });
+    S.events.push({ id:uid('ev'), umId:m.id, stage:1, kind:'stage', title:'체크인 · 첫 인계', detail:'최민준 직원에게 인계', by:'최민준', at: ago(150 - i) });
+    S.events.push({ id:uid('ev'), umId:m.id, stage:2, kind:'stage', title:'보안검색 통과', detail:'출국장 이동 완료', by:'최민준', at: ago(110 - i) });
+    S.handoffs.push({ id:uid('ho'), umId:m.id, stage:3, fromName:'최민준', toName:'정하늘', toOrg:'인천공항 탑승 지원', place:'보안검색 통과 후 · 248 게이트 구역', method:'직원 QR', at: ago(70 - i), status:'confirmed' });
+    S.events.push({ id:uid('ev'), umId:m.id, stage:3, kind:'stage', title:'디지털 인계 완료', detail:'최민준 → 정하늘', by:'정하늘', at: ago(70 - i) });
+  });
+  S.consents.push({ id:'cr1', umId:'um1', guardianId:'g1', verifiedAt: ago(320), requiredAt: ago(320), items:{ child:true, contact:true, staff:true },
+    shoot:{ granted:true, at: ago(319), withdrawnAt:null }, ai:{ granted:true, at: ago(319), withdrawnAt:null }, retention:'90',
+    history:[{ at: ago(319), text:'필수 동의 · 촬영 동의 · AI 처리 동의' }] });
+  S.media.push({ id:'md_seed1', umId:'um1', kind:'photo', scene:'terminal', src: genScene('terminal', 11), group:'checkin', caption:'체크인 마치고 출국장으로 가는 길', by:'최민준', at: ago(140), status:'sent', deleted:false });
+  S.media.push({ id:'md_seed2', umId:'um1', kind:'photo', scene:'gate', src: genScene('gate', 23), group:'checkin', caption:'타고 갈 비행기를 보고 있어요', by:'정하늘', at: ago(40), status:'sent', deleted:false });
+  const n = (gid, umId, type, title, body, at, read) => S.notifications.push({ id:uid('nt'), guardianId:gid, umId, type, title, body, at, read });
+  ['g1','g2'].forEach((gid, i) => {
+    const umId = i ? 'um2' : 'um1';
+    n(gid, umId, 'handoff', '체크인 · 첫 인계 완료', '보호자 → 최민준 직원 · 체크인 카운터 C', ago(150), true);
+    n(gid, umId, 'handoff', '디지털 인계 완료', '최민준 → 정하늘 직원 · 보안검색 통과 후', ago(70), i === 1 ? false : true);
+    n(gid, umId, 'flight', '탑승구 안내', `248번 게이트에서 탑승해요. 아이는 정하늘 직원과 함께 대기 중이에요.`, ago(30), false);
+  });
+  return S;
+}
+
+/* ========== 저장소 ==========
+   실제 저장·동기화는 src/db/ 모듈이 담당합니다.
+   - 설정 비어 있음  => 브라우저 저장소만 (기존과 동일)
+   - 설정 채워짐     => Supabase로 기기 간 실시간 동기화
+   어느 쪽이든 부팅은 동기적이고 네트워크를 기다리지 않습니다. */
+const DB = window.UMLinkDB;
+let storageOK = true;
+
+/* 다른 탭 또는 다른 기기에서 상태가 바뀌었을 때 */
+function adoptState(next, origin){
+  if (!next || next.ver !== 6) return;
+  if (origin !== 'remote' && next.rev === S.rev) return;
+  S = next;
+  renderAll();
+}
+
+DB.init({
+  key: KEY,
+  onState: adoptState,
+  onStatus: (st) => {
+    /* 상단 연결 표시를 갱신해요. 토스트는 사라지지만 표시는 남아요. */
+    if (root && root.firstChild) renderAll();
+    if (st === 'live')  toast(DB.statusText());
+    if (st === 'error') toast(DB.statusText(), 'err');
+  },
+});
+
+let S = DB.readLocal();
+if (!S || S.ver !== 6) { S = seed(); DB.commit(S); }
+
+function save(){ storageOK = DB.commit(S); }
+function commit(fn){ fn(S); S.rev++; tickProducing(true); save(); renderAll(); if (!storageOK) toast('브라우저 저장 공간이 부족하거나 차단돼 이 탭에만 반영돼요.', 'err'); }
+
+/* 원격 연결은 화면이 뜬 뒤에 비동기로 시도합니다.
+   실패하면 정적 모드로 그대로 계속 동작합니다. */
+DB.connect(() => S);
+
+/* 조회 */
+const user = id => S.users.find(u => u.id === id);
+const staff = id => S.staff.find(s => s.id === id);
+const umOf = id => S.ums.find(m => m.id === id);
+const flightOf = m => S.flights.find(f => f.id === m.flightId);
+const consentOf = umId => S.consents.find(c => c.umId === umId);
+const consentOK = (umId, k) => { const c = consentOf(umId); return !!(c && c[k] && c[k].granted); };
+const product = id => S.products.find(p => p.id === id);
+const shiftHM = (t, min) => { const [h, m] = t.split(':').map(Number); const x = ((h * 60 + m + min) % 1440 + 1440) % 1440; return String(Math.floor(x / 60)).padStart(2, '0') + ':' + String(x % 60).padStart(2, '0'); };
+const depTime = f => shiftHM(f.depLocal, f.delayMin); // 출발 공항 현지 시각
+const arrTime = f => shiftHM(f.arrLocal, f.delayMin); // 도착 공항 현지 시각
+const durTxt = f => `${Math.floor(f.durationMin / 60)}시간 ${f.durationMin % 60}분`;
+const activeOrder = (umId, pid) => S.orders.filter(o => o.umId === umId && o.productId === pid && !['payment_failed','refunded'].includes(o.status)).slice(-1)[0];
+const photoPass = umId => { const o = activeOrder(umId, 'p_photo'); return !!(o && o.status === 'active'); };
+const sentMedia = umId => S.media.filter(x => x.umId === umId && !x.deleted && x.status === 'sent');
+const crewMedia = umId => sentMedia(umId).filter(x => x.kind === 'photo' || x.kind === 'video');
+function can(u, perm, m){
+  if (!u || !(PERM[u.role] || []).includes(perm)) return false;
+  if (m && u.role === 'guardian') return m.guardians.includes(u.id);
+  if (m && u.role === 'crew') return m.crewId === u.id;
+  if (m && u.role === 'ground') return m.flightId === u.flightId;
+  return true;
+}
+
+/* ========== 도메인 동작 ========== */
+function addEvent(S, umId, e){ S.events.push({ id:uid('ev'), umId, at: nowISO(), kind:'stage', ...e }); }
+/* to: 이 알림을 눌렀을 때 갈 화면. { tab:'live' } 또는 { sub:'pickup' } 형태.
+   생략하면 type을 보고 notiTarget()이 기본 목적지를 정해요. */
+function notify(S, umId, type, title, body, to){
+  const m = S.ums.find(x => x.id === umId);
+  m.guardians.forEach(gid => S.notifications.push({ id:uid('nt'), guardianId:gid, umId, type, title, body, to: to || null, at: nowISO(), read:false }));
+}
+function setOrder(o, status, text){ o.status = status; o.history.push({ at: nowISO(), text }); }
+function reconcile(S, umId){
+  const ok = k => { const c = S.consents.find(c => c.umId === umId); return !!(c && c[k] && c[k].granted); };
+  S.orders.filter(o => o.umId === umId && o.payment === 'test_approved').forEach(o => {
+    const p = S.products.find(p => p.id === o.productId);
+    const allowed = p.requires.every(ok);
+    if (!allowed) {
+      if (['active','ready_to_create','producing','waiting_media'].includes(o.status)) { setOrder(o, 'waiting_consent', '필요한 동의가 철회돼 이용을 멈췄어요'); notify(S, umId, 'order', `${p.name} 이용 보류`, '필요한 동의가 없어 제작·열람을 멈췄어요. 설정에서 다시 동의할 수 있어요.'); }
+      return;
+    }
+    if (o.status === 'waiting_consent' || o.status === 'paid') {
+      if (p.id === 'p_photo') { setOrder(o, 'active', '사진 원본 보기·저장 열림'); notify(S, umId, 'order', '여정 사진 패키지 이용 가능', '아카이브에서 원본을 보고 저장할 수 있어요.'); }
+      else if (p.id === 'p_collage') { setOrder(o, 'ready_to_create', '콜라주를 만들 수 있어요'); notify(S, umId, 'order', 'AI 기념 콜라주 제작 가능', '아카이브에서 사진을 골라 콜라주를 만들어 보세요.'); }
+      else startVideo(S, o);
+    } else if (o.status === 'waiting_media' && p.id === 'p_video') startVideo(S, o);
+  });
+}
+function startVideo(S, o){
+  const frames = S.media.filter(x => x.umId === o.umId && !x.deleted && x.status === 'sent' && (x.kind === 'photo' || x.kind === 'video')).slice(-8).map(x => x.id);
+  if (!frames.length) { if (o.status !== 'waiting_media') setOrder(o, 'waiting_media', '촬영된 사진이 올라오면 제작을 시작해요'); return; }
+  o.frames = frames; o.producingAt = nowISO(); setOrder(o, 'producing', `사진 ${frames.length}장으로 AI 기념 영상 제작 시작 (시뮬레이션)`);
+}
+function tickProducing(inCommit){
+  const due = S.orders.filter(o => o.status === 'producing' && Date.now() - new Date(o.producingAt).getTime() > 4000);
+  if (!due.length) return;
+  const run = (S) => due.forEach(o0 => {
+    const o = S.orders.find(x => x.id === o0.id); if (!o || o.status !== 'producing') return;
+    const id = 'ai_' + o.id; const m = S.ums.find(x => x.id === o.umId); const f = S.flights.find(x => x.id === m.flightId);
+    if (!S.media.find(x => x.id === id)) S.media.push({ id, umId:o.umId, kind:'aivideo', frames:o.frames, title:`${m.name}의 첫 비행`, sub:`${f.from} → ${f.to}`, by:'AI 제작 (시뮬레이션)', at: nowISO(), status:'sent', group:'ai', deleted:false });
+    o.outputId = id; setOrder(o, 'ready', 'AI 기념 영상 제작 완료');
+    notify(S, o.umId, 'order', 'AI 기념 영상이 완성됐어요', '아카이브에서 확인하고 저장할 수 있어요.');
+  });
+  if (inCommit) run(S); else commit(run);
+}
+function applyReport(S, umId, rep, crewName){
+  const m = S.ums.find(x => x.id === umId);
+  const parts = reportParts(rep);
+  addEvent(S, umId, { stage:5, kind:'report', title:'기내 상태 리포트', detail: parts.join(' · '), memo: rep.memo || '', by: crewName, at: rep.at });
+  if (rep.loc && rep.loc !== m.live.location) { m.live.location = rep.loc; m.live.since = rep.at; addEvent(S, umId, { stage:5, kind:'loc', title: locSentence(rep.loc), by:crewName, at: rep.at }); }
+  if (rep.sleep) m.live.sleep = rep.sleep;
+  if (rep.mood) m.live.mood = rep.mood;
+  if (rep.meal) { m.live.meal = rep.meal; m.service.meal = 'done'; m.service.mealAt = rep.at; }
+  (rep.service || []).forEach(s => { const k = { '음료 제공':'drink', '기내식 제공':'meal', '간식 제공':'snack', '약 복용 확인':'med' }[s]; if (k) { if (k === 'meal' && !rep.meal) { if (m.service.meal !== 'done') m.service.meal = 'progress'; } else m.service[k] = 'done'; m.service[k + 'At'] = rep.at; } });
+  m.lastStatusAt = rep.at; m.lastStatusText = parts.join(' · ');
+  notify(S, umId, 'status', '기내 상태 리포트', parts.join(' · ') + (rep.memo ? ` — “${rep.memo}”` : ''));
+}
+function reportParts(r){
+  const out = [];
+  if (r.meal) out.push({ '잘 먹었어요':'식사 완료', '조금 먹었어요':'식사 조금', '안 먹었어요':'식사 안 함' }[r.meal]);
+  if (r.loc) out.push(r.loc === '기타' ? '기타 위치' : r.loc);
+  if (r.sleep) out.push({ '자는 중':'수면 중', '깨어 있어요':'깨어 있음' }[r.sleep]);
+  if (r.mood) out.push({ '좋아요':'기분 좋음', '보통이에요':'기분 보통', '불안해해요':'불안해함' }[r.mood]);
+  (r.service || []).forEach(s => out.push(s));
+  return out.length ? out : ['상태 확인'];
+}
+function locSentence(l){ return ({ '좌석에 있어요':'좌석으로 돌아왔어요', '화장실':'화장실에 다녀오는 중이에요', '승무원과 함께':'승무원과 함께 있어요', '기타':'기내 다른 곳에 있어요' })[l] || l; }
+function sendMediaNow(S, item){
+  item.status = S.net.failUploads ? 'failed' : 'sent'; item.sentAt = nowISO();
+  if (item.status === 'sent') {
+    if (item.notify) notify(S, item.umId, 'media', item.kind === 'video' ? '새 영상이 올라왔어요' : '새 사진이 올라왔어요', item.caption ? `“${item.caption}” · ${item.by} 승무원` : `${item.by} 승무원이 올렸어요`);
+    reconcile(S, item.umId);
+  }
+}
+function flushOutbox(S){
+  const crewName = (S.users.find(u => u.role === 'crew') || {}).name;
+  S.outbox.forEach(ob => { if (ob.type === 'report') applyReport(S, ob.umId, ob.payload, ob.by || crewName); });
+  S.outbox = [];
+  S.media.filter(x => x.status === 'queued').forEach(x => sendMediaNow(S, x));
+}
+
+/* ========== 화면 상태(탭별) ========== */
+let layout = (() => { try { return sessionStorage.getItem('umlink.layout'); } catch(e){ return null; } })() || (window.innerWidth >= 1080 ? 'split' : 'single');
+function loadSessions(){ try { return JSON.parse(sessionStorage.getItem('umlink.sessions') || 'null'); } catch(e){ return null; } }
+const savedSess = loadSessions();
+const panes = [
+  { id:'A', session: savedSess ? savedSess[0] : (layout === 'split' ? { userId:'c1' } : null), ui:{} },
+  { id:'B', session: savedSess ? savedSess[1] : { userId:'g1' }, ui:{} },
+];
+function persistUI(){ try { sessionStorage.setItem('umlink.layout', layout); sessionStorage.setItem('umlink.sessions', JSON.stringify(panes.map(p => p.session))); } catch(e){} }
+const visiblePanes = () => layout === 'split' ? panes : [panes[0]];
+const pUser = p => p.session && user(p.session.userId);
+
+
+/* ========== 비행 여정 · 항공기 이동 시뮬레이션 ========== */
+const AP = { ICN:{ lat:37.4602, lon:126.4407 }, LAX:{ lat:33.9416, lon:-118.4085 } }; // 실제 공항 좌표
+const FX_SPEED = { slow:180, normal:90, fast:40 }; // 전체 비행을 재생하는 데 걸리는 초
+const PLANE_PATH = 'M10.5 3.5c0-.8.7-1.5 1.5-1.5s1.5.7 1.5 1.5V9l8 4.5V16l-8-2.5V19l2.5 2v1.5L12 21.5l-4 1V21l2.5-2v-5.5L2.5 16v-2.5l8-4.5z';
+function gcRoute(a, b, n){ // 대권(최단) 항로, 날짜변경선을 넘어도 이어지도록 경도를 펼침
+  const r = d => d * Math.PI / 180, dg = x => x * 180 / Math.PI;
+  const p1 = r(a.lat), l1 = r(a.lon), p2 = r(b.lat), l2 = r(b.lon);
+  const d = 2 * Math.asin(Math.sqrt(Math.sin((p2 - p1) / 2) ** 2 + Math.cos(p1) * Math.cos(p2) * Math.sin((l2 - l1) / 2) ** 2));
+  const out = []; let prev = null;
+  for (let i = 0; i <= n; i++) {
+    const f = i / n, A = Math.sin((1 - f) * d) / Math.sin(d), B = Math.sin(f * d) / Math.sin(d);
+    const x = A * Math.cos(p1) * Math.cos(l1) + B * Math.cos(p2) * Math.cos(l2);
+    const y = A * Math.cos(p1) * Math.sin(l1) + B * Math.cos(p2) * Math.sin(l2);
+    const z = A * Math.sin(p1) + B * Math.sin(p2);
+    const lat = dg(Math.atan2(z, Math.sqrt(x * x + y * y))); let lon = dg(Math.atan2(y, x));
+    if (prev !== null) { while (lon - prev > 180) lon -= 360; while (lon - prev < -180) lon += 360; }
+    prev = lon; out.push([lat, lon]);
+  }
+  return out;
+}
+let ROUTE = null; const route = () => ROUTE || (ROUTE = gcRoute(AP.ICN, AP.LAX, 180));
+function routeAt(t){ const R = route(), n = R.length - 1, x = Math.max(0, Math.min(1, t)) * n, i = Math.min(n - 1, Math.floor(x)), k = x - i; return [R[i][0] + (R[i+1][0] - R[i][0]) * k, R[i][1] + (R[i+1][1] - R[i][1]) * k]; }
+function routeSplit(t){ const R = route(), n = R.length - 1, i = Math.min(n, Math.floor(Math.max(0, Math.min(1, t)) * n)), cur = routeAt(t); return [R.slice(0, i + 1).concat([cur]), [cur].concat(R.slice(i + 1))]; }
+function fxState(p, f){
+  if (!p.fp) p.fp = { t: f.progress / 100, playing:false, synced:true, speed:'normal', follow:true };
+  if (p.fp.synced && !p.fp.playing) p.fp.t = f.progress / 100;
+  return p.fp;
+}
+const hhmm = m => `${Math.floor(m / 60)}시간 ${String(m % 60).padStart(2, '0')}분`;
+function fxValues(t, f, fp){
+  const elapsed = Math.round(f.durationMin * t), remain = f.durationMin - elapsed;
+  let alt, spd, st;
+  let stSub = '';
+  if (t <= 0) { alt = 0; spd = 0; st = fp && fp.synced ? PHASES[f.phase] : '출발 대기'; stSub = `${depTime(f)} 출발 예정`; }
+  else if (t >= 1) { alt = 0; spd = 0; st = '도착 완료'; stSub = `${arrTime(f)} 도착`; }
+  else if (t < 0.07) { const k = t / 0.07; alt = 37000 * (1 - (1 - k) ** 2); spd = 300 + 590 * k; st = '이륙 · 상승 중'; }
+  else if (t < 0.9) { alt = t < 0.5 ? 37000 : 39000; spd = 905 - Math.round(15 * Math.sin(t * 20)); st = '순항 중'; }
+  else { const k = (t - 0.9) / 0.1; alt = 39000 * (1 - k) ** 1.3; spd = 880 - 620 * k; st = k > 0.8 ? '착륙 접근 중' : '강하 중'; }
+  alt = Math.round(alt / 100) * 100; spd = Math.round(spd / 5) * 5;
+  return { pct: Math.round(t * 100), pctExact: t * 100, elapsedTxt: hhmm(elapsed), remainTxt: hhmm(remain), altTxt: `${alt.toLocaleString()} ft`, spdTxt: `${spd} km/h`, st, stSub };
+}
+const fxPlayLabel = fp => fp.playing ? '❚❚ 일시정지' : fp.t >= 1 ? '▶ 다시 재생' : (fp.t > 0 && !fp.synced) ? '▶ 계속 재생' : '▶ 재생';
+const fxModeText = fp => fp.playing ? '시연 재생 중 · 다른 화면에는 영향 없어요' : fp.synced ? '운항 단계 기준 위치 (관리자 시연 설정)' : '시연 위치 · 다른 화면에는 영향 없어요';
+
+/* Leaflet은 비동기로 불러오고, 실패하면 시뮬레이션 지도로 대체 */
+let LST = 'loading';
+(function loadLeaflet(){
+  const sc = document.createElement('script');
+  sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+  sc.onload = () => { LST = window.L && window.L.map ? 'ready' : 'failed'; panes.forEach(p => p.fm && (LST === 'ready' ? p.fm.upgrade() : p.fm.setReason('지도 라이브러리를 불러오지 못해 시뮬레이션 지도로 보여요'))); };
+  sc.onerror = () => { LST = 'failed'; panes.forEach(p => p.fm && p.fm.setReason('지도 라이브러리를 불러오지 못해 시뮬레이션 지도로 보여요')); };
+  document.head.appendChild(sc);
+})();
+
+/* 시뮬레이션 지도: 실제 좌표를 등장방형 투영한 경위도 격자만 그림(지형은 그리지 않음) */
+const SV = { W:400, H:230, lon0:110, lon1:260, lat0:8, lat1:69 };
+const sproj = (lat, lon) => [(lon - SV.lon0) / (SV.lon1 - SV.lon0) * SV.W, (SV.lat1 - lat) / (SV.lat1 - SV.lat0) * SV.H];
+const lonLbl = l => { const w = ((l + 180) % 360 + 360) % 360 - 180; return w === 180 || w === -180 ? '180°' : w > 0 ? `${w}°E` : `${-w}°W`; };
+function svgMapHTML(){
+  let g = '';
+  for (let lon = 120; lon <= 250; lon += 10) { const [x] = sproj(0, lon); g += `<line class="${lon === 180 ? 'fx-svg-dl' : 'fx-svg-grid'}" x1="${x.toFixed(1)}" y1="0" x2="${x.toFixed(1)}" y2="${SV.H}"/>`; if (lon % 30 === 0) g += `<text class="fx-svg-lbl" x="${(x + 3).toFixed(1)}" y="${SV.H - 6}">${lonLbl(lon)}</text>`; }
+  for (let lat = 10; lat <= 60; lat += 10) { const [, y] = sproj(lat, 0); g += `<line class="fx-svg-grid" x1="0" y1="${y.toFixed(1)}" x2="${SV.W}" y2="${y.toFixed(1)}"/>`; if (lat % 20 === 0) g += `<text class="fx-svg-lbl" x="4" y="${(y - 3).toFixed(1)}">${lat}°N</text>`; }
+  const [dx] = sproj(0, 180);
+  const [ax, ay] = sproj(AP.ICN.lat, AP.ICN.lon), [bx, by] = sproj(AP.LAX.lat, AP.LAX.lon + 360);
+  return `<svg viewBox="0 0 ${SV.W} ${SV.H}" preserveAspectRatio="xMidYMid meet" aria-hidden="true">${g}
+    <text class="fx-svg-lbl" x="${(dx + 3).toFixed(1)}" y="40">날짜변경선</text>
+    <polyline data-s="remain" class="fx-remain" stroke-width="2" stroke-dasharray="5 6" points=""/>
+    <polyline data-s="flown" class="fx-flown" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" points=""/>
+    <circle class="fx-svg-ap" cx="${ax.toFixed(1)}" cy="${ay.toFixed(1)}" r="5"/><text class="fx-svg-code" x="${(ax - 12).toFixed(1)}" y="${(ay + 20).toFixed(1)}">ICN</text>
+    <circle class="fx-svg-ap" cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="5"/><text class="fx-svg-code" x="${(bx - 12).toFixed(1)}" y="${(by + 20).toFixed(1)}">LAX</text>
+    <g data-s="plane"><path class="fx-svg-plane" transform="translate(-12 -12)" d="${PLANE_PATH}"/></g>
+  </svg>`;
+}
+function makeFlightMap(p){
+  const el = document.createElement('div'); el.className = 'fx-mapbox';
+  el.innerHTML = `<div class="fx-canvas"></div><div class="fx-badge">비행 정보 시뮬레이션</div><div class="fx-reason" hidden></div>
+    <div class="fx-tools" hidden><button class="fx-tool" data-act="fx-follow" aria-pressed="true">항공기 따라가기</button><button class="fx-tool" data-act="fx-fit">전체 경로</button><button class="fx-tool sq" data-act="fx-zoom" data-v="1" aria-label="확대">+</button><button class="fx-tool sq" data-act="fx-zoom" data-v="-1" aria-label="축소">−</button></div>
+    <div class="fx-legend"><span><i></i>이동한 구간</span><span><i class="l2"></i>남은 구간</span><span><svg viewBox="0 0 24 24"><path d="${PLANE_PATH}"/></svg>UM 탑승 항공기</span></div>`;
+  const canvas = el.querySelector('.fx-canvas'), tools = el.querySelector('.fx-tools');
+  const fm = { el, mode:null, map:null, t:-1, tilesFailed:false };
+  fm.setReason = txt => { const r = el.querySelector('.fx-reason'); r.textContent = txt || ''; r.hidden = !txt; };
+  fm.syncTools = () => { const b = el.querySelector('[data-act="fx-follow"]'); b.classList.toggle('on', !!p.fp.follow); b.setAttribute('aria-pressed', !!p.fp.follow); };
+  fm.useSvg = reason => {
+    if (fm.map) { try { fm.map.remove(); } catch (e) {} fm.map = null; }
+    fm.mode = 'svg'; el.querySelector('.fx-badge').textContent = '비행 정보 시뮬레이션 · 경위도 격자 지도'; canvas.className = 'fx-canvas svg'; canvas.innerHTML = svgMapHTML(); tools.hidden = true;
+    fm.sv = { flown: canvas.querySelector('[data-s="flown"]'), remain: canvas.querySelector('[data-s="remain"]'), plane: canvas.querySelector('[data-s="plane"]') };
+    fm.setReason(reason); fm.draw(true);
+  };
+  fm.useLeaflet = () => {
+    const Lf = window.L; canvas.innerHTML = ''; canvas.className = 'fx-canvas leaflet';
+    const map = Lf.map(canvas, { zoomControl:false, attributionControl:true, scrollWheelZoom:false, minZoom:1, maxZoom:7, zoomSnap:0.5, worldCopyJump:false });
+    map.attributionControl.setPrefix(false);
+    const tiles = Lf.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:7, attribution:'© OpenStreetMap contributors' }).addTo(map);
+    let loaded = 0, errs = 0;
+    const fail = () => { if (fm.map !== map) return; fm.tilesFailed = true; fm.useSvg('지도 타일을 불러오지 못해 시뮬레이션 지도로 보여요'); };
+    tiles.on('tileload', () => { loaded++; if (loaded === 1) fm.setReason(''); });
+    tiles.on('tileerror', () => { errs++; if (!loaded && errs >= 4) fail(); });
+    setTimeout(() => { if (!loaded) fail(); }, 7000);
+    const R = route();
+    fm.remain = Lf.polyline(R, { className:'fx-remain', weight:2.5, dashArray:'6 8', interactive:false }).addTo(map);
+    fm.flown = Lf.polyline([R[0]], { className:'fx-flown', weight:4, lineCap:'round', interactive:false }).addTo(map);
+    const apIcon = (code, side) => Lf.divIcon({ className:`fx-ap ${side}`, html:`<span class="d"></span><b>${code}</b>`, iconSize:[12,12], iconAnchor:[6,6] });
+    Lf.marker([AP.ICN.lat, AP.ICN.lon], { icon:apIcon('ICN','l'), interactive:false, keyboard:false }).addTo(map);
+    Lf.marker([AP.LAX.lat, AP.LAX.lon + 360], { icon:apIcon('LAX','r'), interactive:false, keyboard:false }).addTo(map);
+    fm.plane = Lf.marker(R[0], { icon:Lf.divIcon({ className:'fx-plane-icon', html:`<div class="fx-plane"><svg viewBox="0 0 24 24"><path d="${PLANE_PATH}"/></svg></div>`, iconSize:[36,36], iconAnchor:[18,18] }), interactive:false, keyboard:false, zIndexOffset:1000 }).addTo(map);
+    fm.bounds = Lf.latLngBounds(R);
+    map.on('dragstart', () => { if (p.fp.follow) { p.fp.follow = false; fm.syncTools(); } });
+    map.on('zoomend', () => fm.draw(true, true));
+    fm.map = map; fm.mode = 'leaflet'; el.querySelector('.fx-badge').textContent = '비행 정보 시뮬레이션'; tools.hidden = false; fm.syncTools(); fm.setReason('지도 불러오는 중…');
+    if (p.fp.follow) map.setView(routeAt(p.fp.t), 3, { animate:false }); else map.fitBounds(fm.bounds, { padding:[24,24], animate:false });
+    fm.draw(true, true);
+  };
+  fm.mount = () => {
+    if (!fm.mode) { if (LST === 'ready') fm.useLeaflet(); else fm.useSvg(LST === 'failed' ? '지도 라이브러리를 불러오지 못해 시뮬레이션 지도로 보여요' : '지도 불러오는 중…'); }
+    else if (fm.mode === 'svg' && LST === 'ready' && !fm.tilesFailed) fm.useLeaflet();
+    if (fm.map) fm.map.invalidateSize({ animate:false });
+  };
+  fm.upgrade = () => { if (el.isConnected && fm.mode !== 'leaflet' && !fm.tilesFailed) fm.useLeaflet(); };
+  fm.fit = () => { if (fm.map) fm.map.fitBounds(fm.bounds, { padding:[24,24] }); };
+  fm.zoom = d => { if (fm.map) fm.map.setZoom(fm.map.getZoom() + d); };
+  fm.draw = (force, noPan) => {
+    const t = p.fp.t; if (!force && Math.abs(t - fm.t) < 1e-6) return; fm.t = t;
+    const pos = routeAt(t), back = routeAt(Math.max(0, t - 0.003)), fwd = routeAt(Math.min(1, t + 0.003));
+    if (fm.mode === 'svg' && fm.sv) {
+      const [flown, remain] = routeSplit(t), ptsOf = arr => arr.map(([la, lo]) => sproj(la, lo).map(v => v.toFixed(1)).join(',')).join(' ');
+      fm.sv.flown.setAttribute('points', ptsOf(flown)); fm.sv.remain.setAttribute('points', ptsOf(remain));
+      const [x, y] = sproj(pos[0], pos[1]), [x1, y1] = sproj(back[0], back[1]), [x2, y2] = sproj(fwd[0], fwd[1]);
+      const ang = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI + 90;
+      fm.sv.plane.setAttribute('transform', `translate(${x.toFixed(2)} ${y.toFixed(2)}) rotate(${ang.toFixed(1)})`);
+      fm.angle = ang;
+    } else if (fm.mode === 'leaflet' && fm.map) {
+      const [flown, remain] = routeSplit(t); fm.flown.setLatLngs(flown); fm.remain.setLatLngs(remain); fm.plane.setLatLng(pos);
+      const a = fm.map.latLngToLayerPoint(back), b = fm.map.latLngToLayerPoint(fwd);
+      const ang = Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI + 90; fm.angle = ang;
+      const pe = fm.plane.getElement(), inner = pe && pe.querySelector('.fx-plane'); if (inner) inner.style.transform = `rotate(${ang.toFixed(1)}deg)`;
+      if (p.fp.follow && !noPan) { const now = performance.now(); if (force || now - (fm.lastPan || 0) > 900) { fm.lastPan = now; fm.map.panTo(pos, { animate: !force, duration:0.8 }); } }
+    }
+  };
+  return fm;
+}
+function fxMount(p){
+  const pe = root.querySelector(`[data-pane="${p.id}"]`); const slot = pe && pe.querySelector('[data-fmap-slot]'); if (!slot) return;
+  if (!p.fm) p.fm = makeFlightMap(p);
+  slot.replaceWith(p.fm.el); p.fm.mount(); fxUpdate(p, true);
+}
+function fxUpdate(p, force){
+  const fp = p.fp; if (!fp) return;
+  const u = pUser(p); if (!u || u.role !== 'guardian') return;
+  const m = umOf(u.umId); if (!m) return; const f = flightOf(m); const v = fxValues(fp.t, f, fp);
+  const pe = root.querySelector(`[data-pane="${p.id}"]`);
+  if (pe) {
+    const set = (k, txt) => { const e = pe.querySelector(`[data-fx="${k}"]`); if (e && e.textContent !== txt) e.textContent = txt; };
+    set('pct', v.pct + '%'); set('elapsed', v.elapsedTxt); set('remain', v.remainTxt); set('alt', v.altTxt); set('spd', v.spdTxt); set('st', v.st); set('stsub', v.stSub); set('playlbl', fxPlayLabel(fp)); set('mode', fxModeText(fp));
+    const bar = pe.querySelector('[data-fx="bar"]'); if (bar) bar.style.width = v.pctExact.toFixed(2) + '%';
+    const sl = pe.querySelector('[data-fx="slider"]'); if (sl && (fp.playing || force || document.activeElement !== sl)) { sl.value = Math.round(fp.t * 1000); } if (sl) sl.setAttribute('aria-valuetext', `${v.pct}% · ${v.st}`);
+    const sb = pe.querySelector('[data-fx="syncbtn"]'); if (sb) sb.hidden = fp.synced;
+    pe.querySelectorAll('[data-act="fx-speed"]').forEach(b => b.classList.toggle('on', b.dataset.v === fp.speed));
+  }
+  if (p.fm) p.fm.draw(force);
+}
+let fxLast = 0;
+function fxLoop(ts){
+  const dt = fxLast ? Math.min(120, ts - fxLast) : 0; fxLast = ts;
+  panes.forEach(p => { const fp = p.fp; if (!fp || !fp.playing) return;
+    fp.t = Math.min(1, fp.t + dt / (FX_SPEED[fp.speed] * 1000));
+    if (fp.t >= 1) { fp.t = 1; fp.playing = false; fxUpdate(p, true); } else fxUpdate(p); });
+  requestAnimationFrame(fxLoop);
+}
+requestAnimationFrame(fxLoop);
+
+/* 토스트 */
+function toast(msg, kind, from){
+  const box = document.getElementById('toasts'); const el = document.createElement('div');
+  el.className = 'toast' + (kind === 'err' ? ' err' : ''); el.innerHTML = (from ? `<small>${esc(from)}</small>` : '') + esc(msg);
+  box.appendChild(el); setTimeout(() => el.remove(), 2800);
+  while (box.children.length > 2) box.firstChild.remove();
+}
+function deny(p){ toast('이 계정에는 해당 권한이 없어 처리하지 않았어요.', 'err', paneLabel(p)); }
+function paneLabel(p){ const u = pUser(p); return u ? ({ guardian:'보호자 앱', crew:'승무원 앱', admin:'관리자' }[u.role]) : '로그인'; }
+
+/* ========== 렌더 ========== */
+const root = document.getElementById('app');
+let resetArm = false;
+function renderAll(){
+  root.innerHTML = `
+  <header class="demo-bar">
+    <a class="home" href="index.html">← 소개 사이트</a><div class="brand">UM LINK<small>작동형 시제품</small></div>
+    <span class="demo-tag">가상 데이터 · 테스트 결제 · 실제 연동 없음</span>
+    <span class="conn c-${DB.status()}" title="${esc(DB.statusText())}">
+      <i></i>${DB.status() === 'live' ? '실시간 연결됨'
+             : DB.status() === 'connecting' ? '연결 중...'
+             : DB.status() === 'error' ? '연결 실패 · 이 기기에만 저장'
+             : '이 기기에만 저장'}</span>
+    <div class="sp"></div>
+    <div class="seg" role="group" aria-label="화면 배치">
+      <button data-act="layout" data-v="split" class="${layout === 'split' ? 'on' : ''}">나란히 시연</button>
+      <button data-act="layout" data-v="single" class="${layout === 'single' ? 'on' : ''}">한 화면</button>
+    </div>
+    <button class="btn-reset ${resetArm ? 'confirm' : ''}" data-act="reset">${resetArm ? '눌러서 초기화 확정' : '시연 데이터 초기화'}</button>
+  </header>
+  <div class="stage ${layout}">${visiblePanes().map(p => `<section class="pane" data-pane="${p.id}">${renderPane(p)}</section>`).join('')}</div>`;
+  // 새 알림 토스트(보호자 패널)
+  visiblePanes().forEach(p => {
+    const u = pUser(p); if (!u || u.role !== 'guardian') { p.lastUnread = null; return; }
+    const un = S.notifications.filter(n => n.guardianId === u.id && !n.read);
+    if (p.lastUnread != null && un.length > p.lastUnread && u.notify) { const latest = un.slice().sort((a,b) => b.at.localeCompare(a.at))[0]; toast(`새 알림 · ${latest.title}`, '', '보호자 앱'); }
+    p.lastUnread = un.length;
+  });
+  visiblePanes().forEach(fxMount);
+}
+function renderPane(p){
+  const u = pUser(p);
+  if (!u) return renderLogin(p);
+  const rl = { guardian:'보호자 앱', crew:'객실승무원 앱', admin:'관리자 콘솔', ground:'지상직원 앱' }[u.role];
+  const bar = `<div class="pane-bar"><span class="who"><span class="role-dot r-${u.role}"></span><b>${rl}</b> · ${esc(u.name)} (가상)</span><button class="btn btn-ghost btn-sm" data-act="logout">계정 전환</button></div>`;
+  if (u.role === 'guardian') return bar + renderGuardian(p, u);
+  if (u.role === 'crew') return bar + renderCrew(p, u);
+  if (u.role === 'ground') return bar + renderGround(p, u);
+  return bar + renderAdmin(p, u);
+}
+function rerender(p){ const el = root.querySelector(`[data-pane="${p.id}"]`); if (el) { el.innerHTML = renderPane(p); fxMount(p); } }
+
+/* ---------- 로그인 ---------- */
+function renderLogin(p){
+  const acct = (id, color, letter, title, desc) => { const u = user(id); return `<button class="acct" data-act="login" data-uid="${id}"><span class="ic" style="background:${color}">${letter}</span><span class="t"><b>${title}</b><span>${desc} · ID ${esc(u.login)}</span></span><span class="pill">로그인</span></button>`; };
+  return `<div class="login">
+    <div><div class="eyebrow">UM LINK · 비동반 소아 여정 관리</div><h2>시연 계정으로 로그인</h2><p class="muted small" style="margin-top:6px">사용자 유형마다 볼 수 있는 화면과 데이터가 달라요. 두 탭이나 '나란히 시연'으로 열면 한쪽에서 기록한 내용이 다른 쪽에 바로 반영돼요.</p></div>
+    <div class="stack">
+      ${acct('g1','var(--accent)','보','보호자 · 김지은 (가상)','하린(가상, 만 9세) · 촬영·AI 동의 완료')}
+      ${acct('g2','var(--accent)','보','보호자 · 이성호 (가상)','도윤(가상, 만 7세) · 첫 로그인, 동의 절차부터')}
+      ${acct('c1','var(--navy-2)','승','객실승무원 · 박서연 (가상)','KE017 담당 UM 2명')}
+      ${acct('a1','var(--warn)','관','관리자','항공편·여정·주문·동의 관리')}
+      ${acct('gs1','var(--ok)','지','지상직원 · Jordan Lee (가상)','LAX 도착 서비스 · 인수자 확인만')}
+    </div>
+    <div class="note"><span class="i">i</span><span>시제품 로그인이에요. 실제 본인인증·사내 SSO는 연동되지 않았고, 버튼을 누르면 해당 역할 권한으로 바로 접속해요.</span></div>
+  </div>`;
+}
+
+/* ---------- 보호자 ---------- */
+function renderGuardian(p, u){
+  const m = umOf(u.umId); const f = flightOf(m); const c = consentOf(m.id);
+  if (!can(u, 'um.read', m)) return `<div class="empty">연결된 아이 정보가 없어요.</div>`;
+  if (!c || !c.requiredAt) return gOnboard(p, u, m);
+  if (p.ui.gsub) return gSub(p, u, m, f);
+  const tab = p.ui.gtab || 'home';
+  const unread = S.notifications.filter(n => n.guardianId === u.id && !n.read).length;
+  const body = { home:gHome, flight:gFlight, live:gLive, noti:gNoti, archive:gArchive }[tab](p, u, m, f);
+  const tb = (k, ic, label, badge) => `<button data-act="gtab" data-v="${k}" class="${tab === k ? 'on' : ''}">${ic}<span>${label}</span>${badge ? `<span class="badge">${badge}</span>` : ''}</button>`;
+  return `<div class="g-app">
+    <div class="g-top"><span class="logo">UM Link</span><span class="kid">${esc(m.name)} · 만 ${m.age}세 · ${esc(f.no)}</span><button class="icon-btn" data-act="gsub" data-v="settings" aria-label="설정">${I.gear}</button></div>
+    <main class="g-main">${body}</main>
+    <nav class="g-tabs">${tb('home', I.home, '홈')}${tb('flight', I.plane, '비행 여정')}${tb('live', I.live, '실시간 현황')}${tb('noti', I.bell, '알림', u.notify && unread ? unread : 0)}${tb('archive', I.photo, '아카이브')}</nav>
+  </div>`;
+}
+function gOnboard(p, u, m){
+  const ob = p.ui.ob || (p.ui.ob = { step:1, verified:false, req:{}, shoot:false, ai:false, retention:'30', terms:false });
+  const head = (n, t) => `<div class="eyebrow">가입 · 동의 ${n} / 3 단계</div><h2 style="font-size:21px">${t}</h2>`;
+  if (ob.step === 1) {
+    const allReq = ob.req.child && ob.req.contact && ob.req.staff;
+    const ck = (k, t) => `<label class="check"><input type="checkbox" data-act-change="ob-req" data-k="${k}" ${ob.req[k] ? 'checked' : ''}><span>${t}</span></label>`;
+    return `<div class="g-app"><main class="g-main">
+      <div class="stack">${head(1, '시작하기 전에 동의가 필요해요')}<p class="small muted">개인정보 보호법 제22조의2에 따라 만 14세 미만 아동의 정보는 법정대리인(부모 등)이 동의해야 처리할 수 있어요.</p></div>
+      <div class="card stack">
+        <dl class="kv"><dt>보호자</dt><dd>${esc(u.name)} · ${esc(u.relation === '부' ? '부' : '모')}</dd><dt>아이</dt><dd>${esc(m.name)} (가상) · ${esc(m.code)}</dd></dl>
+        <button class="btn ${ob.verified ? 'btn-line' : 'btn-navy'} btn-block" data-act="ob-verify" ${ob.verified ? 'disabled' : ''}>${ob.verified ? '법정대리인 확인됨 (시뮬레이션)' : '본인인증으로 법정대리인 확인'}</button>
+        <span class="pill sim" style="justify-self:start">실제 본인인증 미연동 · 시뮬레이션</span>
+      </div>
+      <div class="card"><dl class="kv"><dt>수집 항목</dt><dd>이름 · 생년월 · 항공편 · 좌석 · 상태 기록</dd><dt>이용 목적</dt><dd>여정 확인, 인계 기록, 실시간 현황 안내</dd><dt>보유 기간</dt><dd>여정 종료 후 90일</dd></dl></div>
+      <div class="card" style="padding-block:6px">${ck('child','[필수] 아동 개인정보 수집 · 이용')}<hr class="divider">${ck('contact','[필수] 보호자 연락처 수집 · 이용 (알림 전송)')}<hr class="divider">${ck('staff','[필수] 담당 직원·승무원에게 아이 정보 제공')}</div>
+      ${ob.terms ? `<div class="note">본 약관은 시제품용 요약본이에요. 수집한 정보는 여정 안내와 인계 기록에만 쓰고, 보유 기간이 지나면 파기해요. 안전 관련 인계 기록은 항공사 운영 기준에 따라 별도로 보관될 수 있어요.</div>` : ''}
+      <p class="small muted">사진·영상 촬영과 AI 콜라주는 다음 단계에서 따로 동의해요. 필수 동의를 거부하면 서비스를 이용할 수 없어요.</p>
+      <button class="btn btn-primary btn-block" data-act="ob-next" ${allReq && ob.verified ? '' : 'disabled'}>동의하고 시작하기</button>
+      ${!ob.verified ? `<p class="small muted" style="text-align:center">법정대리인 확인과 필수 동의 3개가 필요해요.</p>` : ''}
+      <button class="btn btn-ghost" data-act="ob-terms">${ob.terms ? '약관 접기' : '전체 약관 보기'}</button>
+    </main></div>`;
+  }
+  if (ob.step === 2) {
+    const f = flightOf(m);
+    return `<div class="g-app"><main class="g-main">
+      <div class="stack">${head(2, '아이 여정을 확인해요')}<p class="small muted">항공사 UM 신청 정보와 연결됐어요. 틀린 내용이 있으면 항공사 UM 데스크에 알려 주세요.</p></div>
+      <div class="hero">${flightStrip(f)}<dl class="kv" style="color:var(--navy-ink)"><dt style="color:var(--navy-muted)">아이</dt><dd>${esc(m.name)} (가상) · 만 ${m.age}세</dd><dt style="color:var(--navy-muted)">좌석</dt><dd class="mono">${m.seat}</dd><dt style="color:var(--navy-muted)">도착지 인수자</dt><dd>${esc(m.pickup)}</dd></dl></div>
+      <button class="btn btn-primary btn-block" data-act="ob-step" data-v="3">확인했어요</button>
+      <button class="btn btn-ghost" data-act="ob-step" data-v="1">이전</button>
+    </main></div>`;
+  }
+  const opt = (k, t, d) => `<div class="card row between" style="flex-wrap:nowrap"><div style="min-width:0"><div class="pill" style="margin-bottom:6px">선택</div><b style="display:block">${t}</b><span class="small muted">${d}</span></div><button class="switch ${ob[k] ? 'on' : ''}" data-act="ob-opt" data-k="${k}" aria-pressed="${ob[k]}" aria-label="${t}"></button></div>`;
+  const rad = (v, t) => `<label class="check" style="padding:6px 0"><input type="radio" name="ret-${p.id}" data-act-change="ob-ret" value="${v}" ${ob.retention === v ? 'checked' : ''}><span>${t}</span></label>`;
+  return `<div class="g-app"><main class="g-main">
+    <div class="stack">${head(3, '아이의 정보와 사진, 어디까지 쓸까요?')}<p class="small muted">사진·영상은 동의한 경우에만 촬영하고 보관해요. 동의하지 않아도 여정 확인은 쓸 수 있어요.</p></div>
+    ${opt('shoot', '여정 중 사진·영상 촬영과 아카이브 보관', '직원·승무원이 촬영하고 보호자만 볼 수 있어요.')}
+    ${opt('ai', '사진·영상의 AI 처리 (콜라주 만들기)', '동의하지 않으면 AI 콜라주·기념 영상만 쓸 수 없어요.')}
+    <div class="card"><div class="lbl">보관 기간</div>${rad('30','여정 후 30일')}${rad('90','여정 후 90일')}${rad('manual','직접 삭제할 때까지')}</div>
+    <p class="small muted">선택 항목은 동의하지 않아도 서비스를 쓸 수 있고, 설정에서 언제든 철회하거나 삭제할 수 있어요. 유료 상품을 구매해도 이 동의는 자동으로 바뀌지 않아요.</p>
+    <button class="btn btn-primary btn-block" data-act="ob-finish">동의하고 시작하기</button>
+    <button class="btn btn-ghost" data-act="ob-step" data-v="2">이전</button>
+  </main></div>`;
+}
+function flightStrip(f){
+  return `<div class="strip"><div><div class="code">${f.from}</div><div class="city">${esc(f.fromCity)} · 출발 <span class="mono">${depTime(f)}</span></div></div>
+    <div class="mid"><span class="mono">${esc(f.no)} · ${durTxt(f)}</span><div class="line">${I.planeSolid}</div><span>${PHASES[f.phase]}</span></div>
+    <div class="end"><div class="code">${f.to}</div><div class="city">${esc(f.toCity)} · 도착 예정 <span class="mono">${arrTime(f)}</span></div></div></div>`;
+}
+function stageHeadline(m, f){
+  const esc2 = staff(m.escortId); const crew = user(m.crewId);
+  switch (m.stage) {
+    case 4: return { title:'탑승 대기 중', sub:`담당 직원 ${esc2.name}과 ${f.gate}번 게이트에서 탑승을 기다려요` };
+    case 5: return { title: f.phase === 'boarding' ? '탑승 완료 · 출발 준비' : '기내 · 비행 중', sub:`승무원 ${crew.name}이 돌보고 있어요 · 좌석 ${m.seat}` };
+    case 6: case 7: return { title:'착륙 · 지상직원 인계 준비', sub:`승무원 ${crew.name}이 지상직원에게 인계할 준비를 하고 있어요` };
+    case 8: { const h = lastHandoff(m.id, 7); return { title:'도착 · 최종 인계 대기', sub:`지상직원 ${h ? h.toName : ''}과 도착장으로 이동하고 있어요` }; }
+    case 9: { const h = lastHandoff(m.id, 8); return { title:'여정 완료', sub:`${h ? h.toName : '마중 나온 분'}에게 최종 인계됐어요` }; }
+    default: return { title: STAGES[m.stage].label, sub:'진행 중' };
+  }
+}
+const lastHandoff = (umId, stage) => S.handoffs.filter(h => h.umId === umId && h.stage === stage).slice(-1)[0];
+function timeline(m){
+  return `<div class="tl">${STAGES.map((s, i) => {
+    const st = i < m.stage ? 'done' : (i === m.stage ? 'cur' : 'todo');
+    const ev = S.events.filter(e => e.umId === m.id && e.stage === i && e.kind === 'stage').slice(-1)[0];
+    const ho = lastHandoff(m.id, i);
+    let d;
+    if (st === 'done') d = ho ? `${esc(ho.fromName)} → ${esc(ho.toName)} · ${hm(ho.at)}` : ev ? `${esc(ev.detail || ev.title)} · ${hm(ev.at)}` : '완료';
+    else if (st === 'cur') d = ({ 4:`탑승구 ${flightOf(m).gate} · 승무원 확인 대기`, 5:`최근 리포트 ${hm(m.lastStatusAt)} · ${esc(m.lastStatusText)}`, 7:'승무원 → 지상직원 인계 준비', 8:`도착장 이동 · 인수자 ${esc(m.pickup)}` })[i] || '진행 중';
+    else d = esc(s.hint || '예정');
+    return `<div class="tl-item ${st}"><div class="tl-dot">${st === 'done' ? I.check : ''}</div><div><div class="tl-t">${s.label}</div><div class="tl-d">${d}</div></div><div class="tl-s">${st === 'done' ? '완료' : st === 'cur' ? '진행 중' : '예정'}</div></div>`;
+  }).join('')}</div>`;
+}
+function gHome(p, u, m, f){
+  const h = stageHeadline(m, f);
+  const hos = S.handoffs.filter(x => x.umId === m.id).slice().sort((a,b) => b.at.localeCompare(a.at));
+  const wifiNote = m.stage === 5 && f.phase !== 'boarding' && !S.net.wifi
+    ? `<div class="note warn"><span class="i">!</span><span>기내 Wi-Fi 연결이 끊겨 새 기록을 받지 못하고 있어요. ${hm(m.lastStatusAt)} 기록이 마지막이에요. 연결되면 밀린 기록이 한 번에 들어와요.</span></div>`
+    : `<div class="note"><span class="i">i</span><span>비행 중에는 기내 Wi-Fi가 연결될 때만 갱신돼요. 연결이 없으면 직원·승무원 기록이 기준이에요.</span></div>`;
+  const orders = S.orders.filter(o => o.umId === m.id && o.guardianId === u.id && o.status !== 'payment_failed');
+  return `
+  <section class="hero">
+    <div class="hero-top"><div><div class="eyebrow">가상 아동 · ${esc(m.code)}</div><h1>${esc(m.name)} <span class="age">만 ${m.age}세</span></h1></div><span class="pill ${f.delayMin ? 'warn' : 'ok'}">${f.delayMin ? `${f.delayMin}분 지연` : '지연 없음'}</span></div>
+    ${flightStrip(f)}
+    <div class="now"><div class="now-label">지금 단계</div><div class="now-title">${h.title}</div><div class="now-sub">${esc(h.sub)}</div></div>
+    <div class="meta-row"><span>도착 예정 <b class="mono">${arrTime(f)}</b></span><span>마지막 상태 확인 <b class="mono">${hm(m.lastStatusAt)}</b> (${minsSince(m.lastStatusAt)}분 전)</span></div>
+  </section>
+  ${wifiNote}
+  <section class="card stack"><div class="sec-title">여정 타임라인 <span class="pill ok">무료 기본 서비스</span></div>${timeline(m)}</section>
+  <section class="card stack"><div class="sec-title" style="margin-bottom:0">인수 코드 <span class="pill ok">무료 기본 서비스</span></div>
+    <p class="small muted">도착지에서 아이를 데려갈 사람에게 보낼 1회용 코드예요. 지상직원이 따로 할 일은 없어요.</p>
+    <div class="row between"><span class="small">지정 인수자 · <b>${esc(m.pickup || '미지정')}</b></span>
+      ${(() => { const c = pickupCode(m.id); return c && c.usedAt ? '<span class="pill ok">인수 완료</span>' : codeLive(c) ? '<span class="pill">발급됨</span>' : '<span class="pill">미발급</span>'; })()}</div>
+    <button class="btn btn-line accent" data-act="gsub" data-v="pickup">인수 코드 열기</button>
+  </section>
+  <section class="card"><div class="sec-title" style="margin-bottom:4px">인계 기록 <span class="muted small">${hos.length}건</span></div>
+    ${hos.length ? hos.map(x => `<div class="ho"><span class="who">${esc(x.fromName)} → ${esc(x.toName)}</span><span class="mono small">${hm(x.at)}</span><span class="meta">${esc(x.toOrg || '')} · ${esc(x.place)} · ${esc(x.method)} · <span style="color:var(--ok)">확인됨</span></span></div>`).join('') : '<div class="empty">아직 인계 기록이 없어요.</div>'}
+  </section>
+  <section class="card stack"><div class="sec-title">추억 상품 <span class="pill">유료 부가서비스</span></div>
+    <p class="small muted">사진 패키지, AI 콜라주, AI 기념 영상은 따로 신청해요. 안전관리 기능과는 별개예요.</p>
+    ${orders.length ? orders.map(o => orderLine(o)).join('') : ''}
+    <button class="btn btn-line accent" data-act="gsub" data-v="shop">상품 보기</button>
+  </section>`;
+}
+function orderLine(o){ const pr = product(o.productId); const [t, k] = ORDER_STATUS[o.status] || [o.status, '']; return `<div class="row between"><span>${esc(pr.name)}</span><span class="pill ${k}">${t}</span></div>`; }
+function gFlight(p, u, m, f){
+  const fp = fxState(p, f); const v = fxValues(fp.t, f, fp);
+  const kid = m.stage < 5 ? `${stageHeadline(m, f).title} · ${hm(m.lastStatusAt)} 기록` : `${esc(m.lastStatusText)} · ${hm(m.lastStatusAt)} 기록`;
+  const sp = (k, t) => `<button data-act="fx-speed" data-v="${k}" class="${fp.speed === k ? 'on' : ''}">${t}</button>`;
+  return `
+  <div class="stack"><div class="eyebrow">비행 여정 · ${esc(m.name)} · ${esc(f.no)}</div></div>
+  <section class="card stack">
+    <div class="row between" style="flex-wrap:nowrap;align-items:flex-start"><div><div class="mono" style="font-size:22px;font-weight:600">${f.from}</div><div class="small muted">${esc(f.fromCity)} · 출발 <span class="mono">${depTime(f)}</span></div></div>
+      <div style="text-align:right"><div class="mono" style="font-size:22px;font-weight:600">${f.to}</div><div class="small muted">${esc(f.toCity)} · 도착 예정 <span class="mono">${arrTime(f)}</span></div></div></div>
+    <div class="small muted" style="text-align:center;margin-top:-4px">${esc(f.no)} · 비행시간 <b class="mono" style="color:var(--ink)">${durTxt(f)}</b> · 각 공항 현지 시각</div>
+    <div class="fx-slot" data-fmap-slot role="img" aria-label="${esc(f.no)} 항공기 비행 경로 지도 (시뮬레이션)"></div>
+    <div class="fx-ctrl">
+      <button class="btn btn-primary btn-sm" data-act="fx-play" data-fx="playlbl">${fxPlayLabel(fp)}</button>
+      <button class="btn btn-line btn-sm" data-act="fx-reset">처음으로</button>
+      <button class="btn btn-line accent btn-sm" data-act="fx-movie" aria-label="여정 영상 보기, 18초">▶ 여정 영상</button>
+      <div class="fx-speed" role="group" aria-label="재생 속도">${sp('slow','느리게')}${sp('normal','보통')}${sp('fast','빠르게')}</div>
+    </div>
+    <div class="field" style="gap:4px"><label for="fx-r-${p.id}" class="row between" style="flex-wrap:nowrap"><span>비행 진행률</span><b class="mono" data-fx="pct">${v.pct}%</b></label>
+      <input type="range" class="fx-range" id="fx-r-${p.id}" min="0" max="1000" step="1" value="${Math.round(fp.t * 1000)}" data-fx="slider" aria-valuetext="${v.pct}% · ${v.st}"></div>
+    <div class="progress" aria-hidden="true"><i data-fx="bar" style="width:${v.pctExact.toFixed(2)}%"></i></div>
+    <div class="row between small"><span>비행 <b class="mono" data-fx="elapsed">${v.elapsedTxt}</b> 경과</span><span>남은 시간 <b class="mono" data-fx="remain">${v.remainTxt}</b></span></div>
+    <div class="stats"><div class="stat"><div class="k">고도<span class="sim-tag">예시</span></div><div class="v mono" data-fx="alt">${v.altTxt}</div></div><div class="stat"><div class="k">속도<span class="sim-tag">예시</span></div><div class="v mono" data-fx="spd">${v.spdTxt}</div></div><div class="stat"><div class="k">상태</div><div class="v" data-fx="st">${v.st}</div><div class="small muted mono" data-fx="stsub">${v.stSub}</div></div></div>
+    <div class="row between small" style="flex-wrap:nowrap"><span class="muted" data-fx="mode">${fxModeText(fp)}</span><button class="btn btn-ghost btn-sm" data-act="fx-sync" data-fx="syncbtn" ${fp.synced ? 'hidden' : ''}>운항 기준으로</button></div>
+    <div class="note"><span class="i">i</span><span><b>비행 정보 시뮬레이션</b> · 실제 운항 데이터(항공편 API)와 연결되지 않았어요. 항공기 위치·고도·속도는 시연용 예시 값이에요.</span></div>
+  </section>
+  <section class="card stack"><div class="sec-title">직원·승무원이 알려 준 아이 상태</div><div style="font-weight:600">${kid}</div>
+    <div class="note"><span class="i">i</span><span>지도의 비행기 아이콘은 항공기 위치예요. 아이의 위치는 "탑승 완료"처럼 직원·승무원 기록으로 알려요.</span></div></section>`;
+}
+function gLive(p, u, m, f){
+  if (m.stage < 5) return `<div class="eyebrow">실시간 현황 · ${esc(m.name)}</div><div class="empty"><b style="display:block;color:var(--ink);margin-bottom:6px">아직 탑승 전이에요</b>기내 현황은 승무원이 탑승을 확인한 뒤부터 보여요.<br>지금은 ${esc(stageHeadline(m, f).sub)}.</div>`;
+  const L = m.live; const locs = ['좌석에 있어요','화장실','승무원과 함께'];
+  const locTile = (k, t) => `<div class="loc ${L.location === k ? 'on' : ''}">${t}</div>`;
+  const svc = (k, t) => { const s = m.service[k]; return `<div class="svc"><span>${t}</span><span class="${s === 'done' ? 'st ok' : s === 'progress' ? 'st warn' : 'st muted'}">${s === 'done' ? `${hm(m.service[k + 'At'])} 완료` : s === 'progress' ? '진행 중 · 식사 중이에요' : '예정'}</span></div>`; };
+  const feed = S.events.filter(e => e.umId === m.id && (e.kind === 'report' || e.kind === 'loc' || (e.kind === 'stage' && e.stage >= 4))).slice().sort((a,b) => b.at.localeCompare(a.at)).slice(0, 6);
+  const pend = S.outbox.filter(o => o.umId === m.id).length;
+  return `
+  <div class="row between"><div class="eyebrow">실시간 현황 · ${esc(m.name)}</div><span class="small muted">최근 갱신 <span class="mono">${hm(m.lastStatusAt)}</span></span></div>
+  ${!S.net.wifi && f.phase !== 'landed' ? `<div class="note warn"><span class="i">!</span><span>기내 Wi-Fi 연결 끊김 · 승무원 기기에 기록이 저장돼 있다가 연결되면 들어와요.</span></div>` : ''}
+  <section class="card stack"><div class="lbl">지금 아이는</div>
+    <div style="font-size:20px;font-weight:700">${esc(L.location)} ${L.location === '좌석에 있어요' ? `· <span class="mono">${m.seat}</span>` : ''}</div>
+    <div class="small muted">${minsSince(L.since)}분째 ${L.location === '좌석에 있어요' ? '자리에 앉아 있어요' : '같은 상태예요'}${L.mood ? ` · 기분 ${esc(L.mood)}` : ''}</div>
+    <div class="loc-grid">${locs.map(k => locTile(k, k === '좌석에 있어요' ? '좌석' : k)).join('')}<div class="loc ${L.sleep === '자는 중' ? 'on' : ''}">수면 중</div></div>
+  </section>
+  <section class="card"><div class="sec-title">식사 · 서비스 현황</div>${svc('drink','음료 서비스')}${svc('meal','기내식 서비스')}${svc('snack','간식 서비스')}${svc('med','약 복용 확인')}</section>
+  <section class="card"><div class="sec-title">방금 있었던 일</div><div class="feed">${feed.length ? feed.map(e => `<div><span>${esc(e.kind === 'report' ? e.detail : e.title)}${e.memo ? `<br><span class="small muted">“${esc(e.memo)}”</span>` : ''}</span><span class="mono small muted">${hm(e.at)}</span></div>`).join('') : '<div>아직 기록이 없어요</div>'}</div></section>
+  <div class="note"><span class="i">i</span><span>승무원이 태블릿에 입력하면 바로 반영돼요. 센서로 위치를 추적하는 게 아니에요.${pend ? ` 전송 대기 중인 기록이 있어요.` : ''}</span></div>`;
+}
+/* ===== 알림 -> 화면 이동 =====================================
+   알림을 누르면 읽음 처리와 함께 관련 화면으로 바로 이동해요.
+   알림에 to가 있으면 그걸 쓰고, 없으면 종류별 기본 목적지로 가요.
+   ============================================================ */
+const NOTI_ROUTE = {
+  handoff: { tab:'home',    label:'인계 기록 보기' },
+  status:  { tab:'live',    label:'실시간 현황 보기' },
+  flight:  { tab:'flight',  label:'비행 여정 보기' },
+  media:   { tab:'archive', label:'아카이브 열기' },
+  order:   { sub:'shop',    label:'주문 상태 보기' },
+  privacy: { sub:'settings',label:'설정 열기' },
+};
+const TAB_LABEL = { home:'홈 보기', flight:'비행 여정 보기', live:'실시간 현황 보기', noti:'알림 보기', archive:'아카이브 열기' };
+const SUB_LABEL = { settings:'설정 열기', shop:'추억 상품 보기', order:'주문 상태 보기', collage:'AI 콜라주 열기', pickup:'인수 코드 보기' };
+function notiTarget(n){
+  if (n && n.to && (n.to.tab || n.to.sub)) {
+    return { tab:n.to.tab, sub:n.to.sub,
+      label: n.to.sub ? (SUB_LABEL[n.to.sub] || '자세히 보기') : (TAB_LABEL[n.to.tab] || '자세히 보기') };
+  }
+  return NOTI_ROUTE[n && n.type] || { tab:'home', label:'홈 보기' };
+}
+
+function gNoti(p, u, m, f){
+  const flt = p.ui.nf || 'all';
+  const map = { all:null, hs:['handoff','status'], flight:['flight'], media:['media','order','privacy'] };
+  const list = S.notifications.filter(n => n.guardianId === u.id && (!map[flt] || map[flt].includes(n.type))).slice().sort((a,b) => b.at.localeCompare(a.at));
+  const ft = (k, t) => `<button class="chip ${flt === k ? 'on' : ''}" data-act="nf" data-v="${k}">${t}</button>`;
+  return `
+  <div class="row between"><h2 style="font-size:20px">알림</h2><button class="btn btn-ghost" data-act="read-all">모두 읽음</button></div>
+  <div class="ntabs">${ft('all','전체')}${ft('hs','인계 · 상태')}${ft('flight','항공편')}${ft('media','콘텐츠 · 주문')}</div>
+  <div class="stack">${list.length ? list.map(n => `<button class="noti ${n.read ? '' : 'unread'}" data-act="read-one" data-id="${n.id}"><span class="dot"></span><span><b>${esc(n.title)}</b><p>${esc(n.body)}</p><span class="noti-go">${esc(notiTarget(n).label)} →</span></span><time class="mono">${hm(n.at)}</time></button>`).join('') : '<div class="empty">이 분류의 알림이 없어요.</div>'}</div>
+  <section class="card row between" style="flex-wrap:nowrap"><div><b>알림 받기</b><div class="small muted">단계 완료 · 상태 리포트 · 항공편 변경. 꺼도 기록은 남아요.</div></div><button class="switch ${u.notify ? 'on' : ''}" data-act="notify-toggle" aria-pressed="${u.notify}" aria-label="알림 받기"></button></section>`;
+}
+function gArchive(p, u, m, f){
+  const shoot = consentOK(m.id, 'shoot'); const ai = consentOK(m.id, 'ai'); const pass = photoPass(m.id);
+  const flt = p.ui.af || 'all';
+  if (!shoot) return `<div class="eyebrow">아카이브</div><div class="empty"><b style="display:block;color:var(--ink);margin-bottom:6px">촬영 동의가 꺼져 있어요</b>촬영·보관에 동의한 경우에만 사진과 영상이 촬영되고 여기에 보여요. 여정 확인 기능은 그대로 쓸 수 있어요.</div><button class="btn btn-line accent" data-act="gsub" data-v="settings">동의 설정으로 이동</button>`;
+  const all = sentMedia(m.id).filter(x => (x.kind === 'collage' || x.kind === 'aivideo') ? ai : true);
+  const nPhoto = all.filter(x => x.kind === 'photo').length, nVid = all.filter(x => x.kind === 'video' || x.kind === 'aivideo').length;
+  const ft = (k, t) => `<button class="chip ${flt === k ? 'on' : ''}" data-act="af" data-v="${k}">${t}</button>`;
+  let content;
+  if (flt === 'report') {
+    const reps = S.events.filter(e => e.umId === m.id && e.kind === 'report').slice().reverse();
+    content = reps.length ? `<section class="card"><div class="feed">${reps.map(e => `<div><span>${esc(e.detail)}${e.memo ? `<br><span class="small muted">“${esc(e.memo)}”</span>` : ''}</span><span class="mono small muted">${hm(e.at)}</span></div>`).join('')}</div></section>` : '<div class="empty">기내 상태 리포트가 아직 없어요.</div>';
+  } else {
+    const items = all.filter(x => flt === 'all' || (flt === 'photo' ? (x.kind === 'photo' || x.kind === 'collage') : (x.kind === 'video' || x.kind === 'aivideo')));
+    const groups = [['ai','AI 추억 콘텐츠'],['checkin','체크인 · 인천공항'],['inflight','기내'],['arrival',`도착 · ${f.toCity} 공항`]];
+    content = items.length ? groups.map(([g, t]) => { const xs = items.filter(x => x.group === g); return xs.length ? `<div><div class="grp-title">${t}</div><div class="media-grid">${xs.map(x => thumb(x, (x.kind === 'photo' || x.kind === 'video') && !pass)).join('')}</div></div>` : ''; }).join('') : '<div class="empty">아직 올라온 사진·영상이 없어요. 직원·승무원이 촬영하면 여기에 쌓여요.</div>';
+  }
+  return `
+  <div class="stack" style="gap:6px"><div class="eyebrow">아카이브</div><h2 style="font-size:20px">아이의 한 순간도 놓치지 않을게요</h2><p class="small muted">첫 기내식, 창밖 구름, 도착하자마자 번진 웃음까지. 아이의 오늘을 사진과 영상으로 담아 전해요.</p></div>
+  <div class="row between"><span class="small">사진 <b>${nPhoto}</b>장 · 영상 <b>${nVid}</b>개</span>${pass ? '<span class="pill ok">사진 패키지 이용 중</span>' : '<span class="pill">미리보기 · 원본은 사진 패키지</span>'}</div>
+  <div class="ntabs">${ft('all','전체')}${ft('photo','사진')}${ft('video','영상')}${ft('report','리포트')}</div>
+  <div class="note"><span class="i">i</span><span>보호자 동의 후 직원·승무원이 촬영해 올려요. 보호자만 볼 수 있어요.</span></div>
+  ${content}
+  <div class="row" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <button class="btn btn-line accent" data-act="save-device">기기에 저장</button>
+    <button class="btn btn-primary ${ai ? '' : 'is-off'}" data-act="open-collage">AI 콜라주 만들기</button>
+  </div>
+  ${!ai ? '<p class="small muted">AI 처리에 동의하지 않아 AI 콜라주·기념 영상을 쓸 수 없어요. 설정에서 바꿀 수 있어요.</p>' : ''}
+  <button class="btn btn-ghost" data-act="gsub" data-v="shop">추억 상품 · 주문 상태 보기</button>`;
+}
+function thumb(x, locked, opts = {}){
+  const src = x.kind === 'aivideo' ? (S.media.find(y => y.id === x.frames[0]) || {}).src : x.src;
+  return `<button class="thumb ${locked ? 'locked' : ''} ${opts.sel ? 'sel' : ''}" data-act="${opts.act || 'view'}" data-id="${x.id}" aria-label="${esc(x.caption || x.title || '사진')}">
+    ${src ? `<img src="${src}" alt="">` : ''}${x.kind === 'video' || x.kind === 'aivideo' ? `<span class="play"><span>${I.play}</span></span>` : ''}
+    ${opts.sel ? `<span class="selno">${opts.sel}</span>` : ''}${locked ? '<span class="wm">미리보기</span>' : x.kind === 'collage' ? '<span class="wm">AI 콜라주</span>' : x.kind === 'aivideo' ? '<span class="wm">AI 영상</span>' : ''}</button>`;
+}
+
+/* 보호자 하위 화면 */
+function gSub(p, u, m, f){
+  const k = p.ui.gsub;
+  const titles = { settings:'설정 · 동의 관리', shop:'추억 상품', checkout:'상품 신청', order:'주문 상태', collage:'AI 콜라주', viewer:'콘텐츠 보기', pickup:'인수 코드' };
+  const body = { settings:gSettings, shop:gShop, checkout:gCheckout, order:gOrder, collage:gCollage, viewer:gViewer, pickup:gPickup }[k](p, u, m, f);
+  return `<div class="g-app"><div class="sub-top"><button class="back" data-act="gback" aria-label="뒤로">${I.back}</button><h2>${titles[k]}</h2></div>${body}</div>`;
+}
+function gSettings(p, u, m, f){
+  const c = consentOf(m.id);
+  const row = k => { const x = c[k]; return `<div class="card stack"><div class="row between" style="flex-wrap:nowrap"><div style="min-width:0"><b>${CONSENT_LABEL[k]}</b><div class="small muted">${x.granted ? `동의함 · <span class="mono">${hm(x.at)}</span>` : x.withdrawnAt ? `철회함 · <span class="mono">${hm(x.withdrawnAt)}</span>` : '동의하지 않음'}</div></div><button class="switch ${x.granted ? 'on' : ''}" data-act="consent-toggle" data-k="${k}" aria-pressed="${x.granted}" aria-label="${CONSENT_LABEL[k]}"></button></div>
+    <span class="small muted">${k === 'shoot' ? '끄면 승무원 앱의 촬영 버튼이 바로 꺼지고, 아카이브가 숨겨져요.' : '끄면 AI 콜라주·기념 영상 제작과 열람이 멈춰요.'}</span></div>`; };
+  const reqs = S.privacyRequests.filter(r => r.umId === m.id);
+  const ords = S.orders.filter(o => o.umId === m.id && o.guardianId === u.id);
+  const del = p.ui.delArm;
+  return `<main class="g-main">
+    <div class="lbl">선택 동의 (각각 따로 관리돼요)</div>${row('shoot')}${row('ai')}
+    <div class="card"><div class="lbl">보관 기간</div>${[['30','여정 후 30일'],['90','여정 후 90일'],['manual','직접 삭제할 때까지']].map(([v,t]) => `<label class="check" style="padding:6px 0"><input type="radio" name="sret-${p.id}" data-act-change="retention" value="${v}" ${c.retention === v ? 'checked' : ''}><span>${t}</span></label>`).join('')}</div>
+    <div class="card stack"><b>필수 동의</b><span class="small muted">아동 개인정보 · 보호자 연락처 · 직원·승무원 정보 제공 — <span class="mono">${hm(c.requiredAt)}</span> 동의. 법정대리인 확인 <span class="mono">${hm(c.verifiedAt)}</span>.</span>
+      <details><summary class="small" style="cursor:pointer">동의 변경 이력 ${c.history.length}건</summary><div class="hist" style="margin-top:8px">${c.history.slice().reverse().map(h => `<div><span class="mono">${hm(h.at)}</span><span>${esc(h.text)}</span></div>`).join('')}</div></details></div>
+    <div class="card stack"><b>내 주문</b>${ords.length ? ords.map(o => `<button class="row between btn-line btn" style="justify-content:space-between" data-act="open-order" data-id="${o.id}"><span>${esc(product(o.productId).name)}</span><span class="pill ${ORDER_STATUS[o.status][1]}">${ORDER_STATUS[o.status][0]}</span></button>`).join('') : '<span class="small muted">주문 내역이 없어요.</span>'}</div>
+    <div class="card stack"><b>삭제</b>
+      <span class="small muted">콘텐츠 삭제는 바로 처리돼요. 개인정보 삭제 요청은 운영자가 확인 후 처리하고, 안전 관련 인계 기록은 운영 기준에 따라 보관 후 파기돼요.</span>
+      ${del === 'media' ? `<div class="note bad">사진·영상·AI 콘텐츠 ${sentMedia(m.id).length}개를 모두 삭제해요. 되돌릴 수 없어요.</div><div class="row"><button class="btn btn-danger btn-sm" data-act="del-media">모두 삭제</button><button class="btn btn-line btn-sm" data-act="del-arm" data-v="">취소</button></div>`
+        : `<button class="btn btn-line" data-act="del-arm" data-v="media">콘텐츠 모두 삭제</button>`}
+      ${del === 'pi' ? `<div class="note bad">아이의 개인정보 삭제를 요청해요. 처리되면 콘텐츠·메모·선택 동의가 삭제되고 앱 연결이 해제돼요.</div><div class="row"><button class="btn btn-danger btn-sm" data-act="pi-request">삭제 요청 보내기</button><button class="btn btn-line btn-sm" data-act="del-arm" data-v="">취소</button></div>`
+        : `<button class="btn btn-line" data-act="del-arm" data-v="pi">개인정보 삭제 요청</button>`}
+      ${reqs.map(r => `<div class="row between small"><span>삭제 요청 <span class="mono">${hm(r.at)}</span></span><span class="pill ${r.status === 'done' ? 'ok' : 'warn'}">${r.status === 'done' ? '처리 완료' : '접수 · 처리 대기'}</span></div>`).join('')}
+    </div>
+  </main>`;
+}
+function gShop(p, u, m, f){
+  return `<main class="g-main">
+    <div class="note ok"><span class="i">i</span><span>여정 확인·인계 기록·상태 알림은 무료 기본 서비스예요. 아래 상품은 원하는 경우에만 신청하는 유료 부가서비스예요.</span></div>
+    <span class="pill sim" style="justify-self:start">시제품 · 테스트 결제만 가능 · 실제 청구 없음</span>
+    ${S.products.map(pr => { const o = activeOrder(m.id, pr.id);
+      return `<section class="card prod"><div class="prod-head"><div><b style="font-size:16px">${esc(pr.name)}</b><div class="small muted">${esc(pr.scope)}</div></div><span class="price">${won(pr.price)}</span></div>
+        <div class="req">${pr.requires.map(k => `<span class="pill ${consentOK(m.id, k) ? 'ok' : 'warn'}">${CONSENT_LABEL[k]} ${consentOK(m.id, k) ? '동의됨' : '동의 필요'}</span>`).join('')}</div>
+        ${o ? `<div class="row between"><span class="pill ${ORDER_STATUS[o.status][1]}">${ORDER_STATUS[o.status][0]}</span><button class="btn btn-line btn-sm" data-act="open-order" data-id="${o.id}">주문 상태</button></div>` : `<button class="btn btn-primary" data-act="pick-product" data-id="${pr.id}">선택하기</button>`}
+      </section>`; }).join('')}
+  </main>`;
+}
+function gCheckout(p, u, m, f){
+  const pr = product(p.ui.pid); const co = p.ui.co || (p.ui.co = { ack:false });
+  const o = p.ui.coOrder && S.orders.find(x => x.id === p.ui.coOrder);
+  const missing = pr.requires.filter(k => !consentOK(m.id, k));
+  const step = o ? (o.payment === 'test_approved' ? 4 : 3) : (co.ack ? 3 : 2);
+  return `<main class="g-main">
+    <div class="steps">${['상품 선택','가격 확인','동의 확인','테스트 결제','제작 · 확인'].map((t, i) => `<span class="${i === step ? 'on' : ''}">${i + 1} ${t}</span>`).join('')}</div>
+    <section class="card prod"><div class="prod-head"><div><b style="font-size:17px">${esc(pr.name)}</b><div class="small muted">${esc(pr.scope)}</div></div><span class="price">${won(pr.price)}</span></div>
+      <dl class="kv"><dt>대상</dt><dd>${esc(m.name)} (가상) · ${esc(f.no)}</dd><dt>상품 금액</dt><dd class="mono">${won(pr.price)}</dd><dt>결제 방식</dt><dd>테스트 결제 (시뮬레이션)</dd></dl></section>
+    <section class="card stack"><b>동의 확인</b>
+      ${pr.requires.map(k => `<div class="row between"><span>${CONSENT_LABEL[k]}</span><span class="pill ${consentOK(m.id, k) ? 'ok' : 'warn'}">${consentOK(m.id, k) ? '동의됨' : '동의 안 함'}</span></div>`).join('')}
+      ${missing.length ? `<div class="note warn"><span class="i">!</span><span>구매해도 동의가 자동으로 바뀌지 않아요. 동의하기 전까지는 제작·열람이 보류돼요.</span></div><button class="btn btn-line btn-sm" style="justify-self:start" data-act="gsub" data-v="settings">동의 설정 열기</button>` : '<span class="small muted">필요한 동의가 모두 확인됐어요.</span>'}
+    </section>
+    ${o && o.status === 'payment_failed' ? `<div class="note bad"><span class="i">!</span><span>테스트 결제가 거절됐어요 (재현용 시나리오). 다시 시도할 수 있어요.</span></div>` : ''}
+    <section class="card stack"><b>테스트 결제</b>
+      <label class="check"><input type="checkbox" data-act-change="co-ack" ${co.ack ? 'checked' : ''}><span>실제 결제가 아닌 시제품 테스트 결제이며, 카드·계좌 정보가 쓰이지 않는다는 것을 확인했어요.</span></label>
+      <button class="btn btn-primary btn-block" data-act="pay" data-v="ok" ${co.ack ? '' : 'disabled'}>${won(pr.price)} 테스트 결제 승인하기</button>
+      <button class="btn btn-ghost" data-act="pay" data-v="fail" ${co.ack ? '' : 'disabled'}>결제 실패 상황 재현</button>
+    </section>
+  </main>`;
+}
+function gOrder(p, u, m, f){
+  const o = S.orders.find(x => x.id === p.ui.oid);
+  if (!o) return `<main class="g-main"><div class="empty">주문을 찾을 수 없어요.</div></main>`;
+  const pr = product(o.productId); const [t, k] = ORDER_STATUS[o.status];
+  let action = '';
+  if (o.status === 'ready_to_create' || (o.status === 'ready' && pr.id === 'p_collage')) action = `<button class="btn btn-primary btn-block" data-act="open-collage">${o.status === 'ready' ? '콜라주 다시 만들기' : 'AI 콜라주 만들기'}</button>`;
+  if (o.status === 'active') action = `<button class="btn btn-primary btn-block" data-act="gtab-go" data-v="archive">아카이브에서 원본 보기</button>`;
+  if (o.status === 'ready' && o.outputId) action += `<button class="btn btn-line accent btn-block" data-act="view" data-id="${o.outputId}">결과 보기</button>`;
+  if (o.status === 'waiting_consent') action = `<button class="btn btn-line accent btn-block" data-act="gsub" data-v="settings">동의 설정 열기</button>`;
+  if (o.status === 'payment_failed') action = `<button class="btn btn-primary btn-block" data-act="pick-product" data-id="${pr.id}">다시 신청하기</button>`;
+  return `<main class="g-main">
+    <section class="card prod"><div class="prod-head"><div><b style="font-size:17px">${esc(pr.name)}</b><div class="small muted mono">${esc(o.id.toUpperCase())}</div></div><span class="price">${won(o.price)}</span></div>
+      <dl class="kv"><dt>주문 상태</dt><dd><span class="pill ${k}">${t}</span></dd><dt>결제 상태</dt><dd>${PAY_STATUS[o.payment]}</dd><dt>신청 시각</dt><dd class="mono">${hm(o.createdAt)}</dd></dl></section>
+    ${o.status === 'producing' ? `<div class="note"><span class="i">i</span><span>AI가 기념 영상을 만드는 중이에요 (시뮬레이션, 약 4초).</span></div>` : ''}
+    ${action}
+    <section class="card stack"><b>처리 이력</b><div class="hist">${o.history.slice().reverse().map(h => `<div><span class="mono">${hm(h.at)}</span><span>${esc(h.text)}</span></div>`).join('')}</div></section>
+  </main>`;
+}
+const LAYOUTS = [
+  [[0,0,.66,.62],[.68,0,.32,.30],[.68,.32,.32,.30],[0,.64,.32,.36],[.34,.64,.32,.36],[.68,.64,.32,.36]],
+  [[0,0,.49,.49],[.51,0,.49,.49],[0,.51,.32,.49],[.34,.51,.32,.49],[.68,.51,.32,.49],[.68,.51,.32,.49]],
+  [[0,0,1,.56],[0,.58,.32,.42],[.34,.58,.32,.42],[.68,.58,.32,.42],[.68,.58,.32,.42],[0,.58,.32,.42]],
+];
+function layoutFor(n, v){ if (n === 1) return [[0,0,1,1]]; if (n === 2) return v % 2 ? [[0,0,1,.49],[0,.51,1,.49]] : [[0,0,.49,1],[.51,0,.49,1]]; if (n === 3) return v % 2 ? [[0,0,1,.56],[0,.58,.49,.42],[.51,.58,.49,.42]] : [[0,0,.6,1],[.62,0,.38,.49],[.62,.51,.38,.49]]; if (n === 4) return [[0,0,.49,.49],[.51,0,.49,.49],[0,.51,.49,.49],[.51,.51,.49,.49]]; return LAYOUTS[v % LAYOUTS.length]; }
+const MAPSPOTS = [[.08,.55],[.27,.2],[.5,.08],[.72,.2],[.9,.5],[.5,.55]];
+function gCollage(p, u, m, f){
+  const ai = consentOK(m.id, 'ai'), shoot = consentOK(m.id, 'shoot'); const o = activeOrder(m.id, 'p_collage');
+  if (!ai || !shoot) return `<main class="g-main"><div class="empty"><b style="display:block;color:var(--ink);margin-bottom:6px">AI 처리 동의가 필요해요</b>${!shoot ? '촬영·보관 동의와 ' : ''}AI 처리 동의가 확인된 경우에만 콜라주를 만들 수 있어요.</div><button class="btn btn-primary" data-act="gsub" data-v="settings">동의 설정 열기</button></main>`;
+  if (!o || !['ready_to_create','ready'].includes(o.status)) return `<main class="g-main"><div class="empty"><b style="display:block;color:var(--ink);margin-bottom:6px">AI 기념 콜라주 신청이 필요해요</b>${o ? `현재 상태: ${ORDER_STATUS[o.status][0]}` : '콜라주는 유료 부가서비스예요. 테스트 결제로 신청해 볼 수 있어요.'}</div><button class="btn btn-primary" data-act="pick-product" data-id="p_collage">AI 기념 콜라주 신청 · ${won(4900)}</button></main>`;
+  const pool = crewMedia(m.id);
+  const cl = p.ui.cl || (p.ui.cl = { sel: pool.slice(0, 5).map(x => x.id), style:'photo', variant:0, title:`${m.name}의 첫 비행` });
+  cl.sel = cl.sel.filter(id => pool.find(x => x.id === id));
+  const imgs = cl.sel.map(id => S.media.find(x => x.id === id));
+  let preview;
+  if (!imgs.length) preview = `<div class="empty">사진을 1장 이상 골라 주세요.</div>`;
+  else if (cl.style === 'map') {
+    const pts = MAPSPOTS.slice(0, imgs.length);
+    preview = `<div class="cl-canvas"><svg viewBox="0 0 100 80" preserveAspectRatio="none"><path d="M${pts.map(([x,y]) => `${x*100} ${y*80+8}`).join(' L')}" fill="none" stroke="var(--route)" stroke-width=".8" stroke-dasharray="2 2"/></svg>${imgs.map((x, i) => `<div class="cell round" style="left:${pts[i][0]*100 - 9}%;top:${pts[i][1]*100}%;width:18%;aspect-ratio:1"><img src="${x.src}" alt=""></div>`).join('')}</div>`;
+  } else {
+    const L = layoutFor(Math.min(imgs.length, 6), cl.variant);
+    preview = `<div class="cl-canvas">${imgs.slice(0, 6).map((x, i) => { const [a,b,c,d] = L[i]; return `<div class="cell" style="left:${a*100}%;top:${b*100}%;width:${c*100}%;height:${d*100}%"><img src="${x.src}" alt=""></div>`; }).join('')}</div>`;
+  }
+  const so = (k, t) => `<button class="style-opt ${cl.style === k ? 'on' : ''}" data-act="cl-style" data-v="${k}">${t}</button>`;
+  return `<main class="g-main">
+    <div class="stack" style="gap:8px"><div class="lbl">1 · 선택한 사진·영상 (${cl.sel.length}개 · 최대 6개)</div>
+      ${pool.length ? `<div class="media-grid" style="grid-template-columns:repeat(5,1fr)">${pool.map(x => thumb(x, false, { act:'cl-pick', sel: cl.sel.indexOf(x.id) + 1 || 0 })).join('')}</div>` : '<div class="empty">아직 촬영된 사진이 없어요.</div>'}</div>
+    <div class="stack" style="gap:8px"><div class="lbl">2 · 스타일</div><div class="style-opts">${so('photo','기념 사진 콜라주')}${so('map','여정 지도형')}${so('video','짧은 기념 영상')}</div></div>
+    ${cl.style === 'video' ? `<div class="note"><span class="i">i</span><span>짧은 기념 영상은 'AI 기념 영상' 상품으로 따로 만들어요.</span></div><button class="btn btn-line accent" data-act="pick-product" data-id="p_video">AI 기념 영상 보기</button>` : `
+    <div class="stack" style="gap:8px"><div class="lbl">3 · 미리보기</div>
+      <div class="cl-box"><input class="cl-title" id="cl-title-${p.id}" data-bind="cl.title" value="${esc(cl.title)}" aria-label="콜라주 제목"><div>${preview}</div><div class="cl-foot mono">${new Date().toISOString().slice(0,10)} · ${f.from} → ${f.to}</div></div>
+      <div class="note"><span class="i">✦</span><span>AI가 만든 결과예요 (시뮬레이션 배치). 저장하기 전에 직접 확인하고 제목을 눌러 문구를 고칠 수 있어요.</span></div></div>`}
+  </main>
+  ${cl.style === 'video' ? '' : `<div class="sticky-actions"><button class="btn btn-line accent" data-act="cl-regen">다시 만들기</button><button class="btn btn-primary" data-act="cl-save" ${imgs.length ? '' : 'disabled'}>아카이브에 저장</button></div>`}`;
+}
+function gViewer(p, u, m, f){
+  const x = S.media.find(y => y.id === p.ui.mid && !y.deleted);
+  if (!x) return `<main class="g-main"><div class="empty">삭제됐거나 볼 수 없는 콘텐츠예요.</div></main>`;
+  const aiKind = x.kind === 'collage' || x.kind === 'aivideo';
+  if (!consentOK(m.id, 'shoot') || (aiKind && !consentOK(m.id, 'ai'))) return `<main class="g-main"><div class="empty">동의가 철회돼 볼 수 없어요.</div></main>`;
+  const locked = !aiKind && !photoPass(m.id);
+  let media;
+  if (x.kind === 'aivideo') {
+    const fr = x.frames.map(id => S.media.find(y => y.id === id)).filter(Boolean); const n = fr.length, d = 2.4;
+    media = `<style>@keyframes ss${n}{0%{opacity:0}${(100/n*.15).toFixed(1)}%{opacity:1}${(100/n).toFixed(1)}%{opacity:1}${(100/n*1.15).toFixed(1)}%{opacity:0}100%{opacity:0}}</style>
+      <div class="slideshow">${fr.map((y, i) => `<img src="${y.src}" alt="" style="animation:ss${n} ${n*d}s infinite ${i*d}s${n === 1 ? ';opacity:1' : ''}">`).join('')}<div class="cap">${esc(x.title)}<div class="small" style="font-weight:500">${esc(x.sub)} · AI 기념 영상 (시뮬레이션 재생)</div></div></div>`;
+  } else {
+    media = `<div class="viewer-img ${locked ? 'locked' : ''} ${x.kind === 'video' ? 'kenburns' : ''}"><img src="${x.src}" alt="${esc(x.caption || '')}">${locked ? `<div class="lockmsg">미리보기예요.<br>원본 보기와 저장은 여정 사진 패키지에서 열려요.</div>` : ''}</div>`;
+  }
+  const saved = x.savedAt;
+  return `<main class="g-main">
+    ${media}
+    <div class="stack" style="gap:4px"><b>${esc(x.caption || x.title || (x.kind === 'video' ? '영상' : '사진'))}</b><span class="small muted">${esc(x.by)} · <span class="mono">${hm(x.at)}</span>${x.kind === 'video' ? ' · 영상 (시뮬레이션 재생)' : ''}</span></div>
+    ${locked ? `<button class="btn btn-primary" data-act="pick-product" data-id="p_photo">여정 사진 패키지 신청 · ${won(9900)}</button>`
+      : `<button class="btn btn-primary" data-act="save-one" data-id="${x.id}">${saved ? '저장 표시됨 · 다시 저장' : '기기에 저장'}</button>
+         ${p.ui.saveHint === x.id ? `<div class="note"><span class="i">i</span><span>시연 환경은 파일 다운로드를 막고 있어요. 위 이미지를 길게 누르거나 오른쪽 클릭해 저장해 주세요. 실제 앱에서는 사진 앱에 바로 저장돼요.</span></div>` : ''}`}
+    ${p.ui.delOne === x.id ? `<div class="row"><button class="btn btn-danger btn-sm" data-act="del-one" data-id="${x.id}">삭제 확정</button><button class="btn btn-line btn-sm" data-act="del-one-arm" data-id="">취소</button></div>` : `<button class="btn btn-ghost" data-act="del-one-arm" data-id="${x.id}">이 콘텐츠 삭제</button>`}
+  </main>`;
+}
+
+/* ===== 인수 코드 =====================================================
+   보호자가 1회용 코드를 발급해 인수자에게 미리 전달하고,
+   도착지에서 인수자가 직접 입력해 최종 인계를 확인합니다.
+
+   설계 원칙 — 지상직원의 업무를 늘리지 않습니다.
+   지상직원은 기존처럼 에스코트와 신분 확인만 하고 이 기능에 관여하지
+   않아요. 코드를 발급하는 쪽도, 입력하는 쪽도 모두 보호자 가족이에요.
+   그래서 이 기능은 지상직원의 신분 확인을 '대체'하지 않고, 보호자가
+   지정한 사람이 맞는지를 보호자 본인이 확인하도록 보완합니다.
+
+   이 블록과 pickup-* 액션 2개만 지우면 기능 전체가 제거됩니다.
+   ==================================================================== */
+const CODE_TTL_MIN = 180;
+const pickupCode = umId => (S.pickupCodes || []).filter(c => c.umId === umId).slice(-1)[0] || null;
+const codeLive = c => !!(c && !c.usedAt && Date.parse(c.expiresAt) > Date.now());
+function genCode(){ let s = ''; for (let i = 0; i < 6; i++) s += '0123456789'[Math.floor(Math.random() * 10)]; return s; }
+
+/* 보호자 화면 — 코드 발급과 전달 */
+function gPickup(p, u, m, f){
+  const c = pickupCode(m.id), live = codeLive(c), used = c && c.usedAt;
+  const ho = S.handoffs.filter(x => x.umId === m.id && x.stage === 8).slice(-1)[0];
+
+  if (used) return `<main class="g-main">
+    <section class="card pc-done"><span class="mark">✓</span>
+      <div><b style="font-size:17px">인수 완료</b>
+      <div class="small muted" style="margin-top:6px">${esc(c.usedByName)} 님에게 <span class="mono">${hm(c.usedAt)}</span>에 인계했어요.${c.verifiedBy ? `<br>${esc(c.verifiedBy)} 지상직원이 신분증과 코드를 확인했어요.` : ''}</div></div>
+    </section>
+    ${ho ? `<section class="card"><div class="sec-title" style="margin-bottom:4px">최종 인계 기록</div>
+      <div class="ho"><span class="who">${esc(ho.fromName)} → ${esc(ho.toName)}</span><span class="mono small">${hm(ho.at)}</span>
+      <span class="meta">${esc(ho.place)} · ${esc(ho.method)} · <span style="color:var(--ok)">확인됨</span></span></div></section>` : ''}
+    <div class="note"><span class="i">i</span><span>인수 코드는 한 번 쓰면 다시 쓸 수 없어요. 인계 기록은 아카이브에 남아요.</span></div>
+  </main>`;
+
+  return `<main class="g-main">
+    <section class="card stack">
+      <div class="sec-title" style="margin-bottom:0">지정한 인수자</div>
+      <div class="row between"><b>${esc(m.pickup || '미지정')}</b><span class="pill ok">보호자 지정</span></div>
+      <span class="small muted">도착지에서 아이를 데려갈 사람이에요. 항공사에 신고한 정보와 같아야 해요.</span>
+    </section>
+
+    ${live ? `
+    <section class="card stack">
+      <div class="pc-code">${esc(c.code)}</div>
+      <div class="pc-meta"><span>발급 <span class="mono">${hm(c.issuedAt)}</span></span><span>만료 <span class="mono">${hm(c.expiresAt)}</span></span></div>
+      <span class="small muted">이 숫자를 인수자에게 문자나 메신저로 보내 주세요. 도착지에서 지상직원에게 보여주면 돼요.</span>
+      <button class="btn btn-line btn-sm" style="justify-self:start" data-act="pickup-issue">코드 다시 발급</button>
+    </section>` : `
+    <section class="card stack">
+      <div class="empty" style="padding:22px 14px">${c ? '코드가 만료됐어요.' : '아직 발급한 코드가 없어요.'}</div>
+      <button class="btn btn-primary btn-block" data-act="pickup-issue">인수 코드 발급</button>
+    </section>`}
+
+    <div class="note"><span class="i">i</span><span>도착지에서 인수자가 이 코드를 지상직원에게 보여주면, 지상직원이 <b>신분증과 코드를 함께 확인</b>하고 아이를 인계해요. 확인되는 즉시 알림이 와요. 지상직원이 원래 하던 신분 확인에 <b>코드 대조 한 단계만</b> 더해지는 구조예요.</span></div>
+  </main>`;
+}
+
+/* 지상직원 화면 — 도착지에서 인수자를 확인하는 1화면.
+   원래 하던 신분 확인에 '코드 대조' 한 단계만 더한 구조예요.
+   체크인 등록·탑승 인계 같은 다른 업무는 이 앱에 넣지 않았어요. */
+function renderGround(p, u){
+  const f = S.flights.find(x => x.id === u.flightId) || S.flights[0];
+  const mine = S.ums.filter(m => m.flightId === f.id);
+  const waiting = mine.filter(m => m.stage >= 8 && m.stage < 9);
+  const doneList = mine.filter(m => m.stage >= 9);
+  const notYet = mine.filter(m => m.stage < 8);
+
+  const head = `<div class="g-top"><span class="logo">UM Link</span><span class="kid">${esc(u.org || '도착 서비스')} · ${esc(f.no)} 도착</span></div>`;
+
+  const card = m => {
+    const c = pickupCode(m.id), live = codeLive(c);
+    return `<section class="card stack">
+      <div class="row between" style="flex-wrap:nowrap"><div style="min-width:0">
+        <b style="font-size:17px">${esc(m.name)} · 만 ${m.age}세</b>
+        <div class="small muted">${esc(m.code)} · 좌석 ${esc(m.seat)}</div></div>
+        <span class="pill ok">인수 대기</span></div>
+      <hr class="divider">
+      <div class="row between"><span class="small">보호자 지정 인수자</span><b>${esc(m.pickup || '미지정')}</b></div>
+      <span class="small muted">신분증으로 위 이름과 같은 사람인지 먼저 확인해 주세요. 연락처는 보이지 않아요.</span>
+      <hr class="divider">
+      <label class="lbl" for="pc-in-${p.id}-${m.id}">인수자가 제시한 코드 6자리</label>
+      <input class="input pc-in" id="pc-in-${p.id}-${m.id}" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="off">
+      <button class="btn btn-primary btn-block" data-act="pickup-verify" data-id="${m.id}">인수 확인</button>
+      ${live ? '<span class="small muted">확인하면 보호자에게 즉시 알림이 가고 인계 기록이 남아요.</span>'
+             : '<span class="small muted">보호자가 아직 코드를 발급하지 않았거나 만료됐어요. 보호자에게 재발급을 요청해 주세요.</span>'}
+    </section>`;
+  };
+
+  const doneCard = m => {
+    const c = pickupCode(m.id);
+    const ho = S.handoffs.filter(x => x.umId === m.id && x.stage === 8).slice(-1)[0];
+    return `<section class="card stack">
+      <div class="row between"><b>${esc(m.name)}</b><span class="pill ok">인계 완료</span></div>
+      <span class="small muted">${ho ? esc(ho.toName) : '인수자'}에게 인계 · <span class="mono">${c && c.usedAt ? hm(c.usedAt) : '--:--'}</span></span>
+    </section>`;
+  };
+
+  return `<div class="g-app">${head}<main class="g-main">
+    <div class="row between"><div class="eyebrow">인수자 확인</div><span class="small muted">담당 UM <b>${mine.length}</b>명</span></div>
+
+    ${waiting.length ? waiting.map(card).join('')
+      : `<section class="card"><div class="empty">${doneList.length === mine.length
+          ? '담당 UM 인계가 모두 끝났어요.'
+          : '아직 도착 인계 전이에요.<br>승무원에게 인계를 받으면 확인 화면이 열려요.'}</div></section>`}
+
+    ${notYet.length ? `<section class="card stack"><div class="sec-title" style="margin-bottom:0">도착 인계 대기</div>
+      ${notYet.map(m => `<div class="row between"><span>${esc(m.name)}</span><span class="pill">${esc(STAGES[Math.min(m.stage, 8)].label)}</span></div>`).join('')}</section>` : ''}
+
+    ${doneList.length ? doneList.map(doneCard).join('') : ''}
+
+    <div class="note"><span class="i">i</span><span>이 앱에서 할 수 있는 일은 <b>인수자 확인 하나</b>예요. 체크인 등록·탑승 인계는 지금처럼 기존 절차 그대로예요. 아이 사진과 상태 기록은 볼 수 없어요.</span></div>
+  </main></div>`;
+}
+
+/* ---------- 승무원 ---------- */
+function renderCrew(p, u){
+  const ums = S.ums.filter(m => can(u, 'um.read', m));
+  const f = ums.length ? flightOf(ums[0]) : S.flights[0];
+  const tab = p.ui.ctab || 'list';
+  if (!p.ui.cum || !ums.find(m => m.id === p.ui.cum)) p.ui.cum = ums[0] && ums[0].id;
+  const m = umOf(p.ui.cum);
+  const queued = S.outbox.length + S.media.filter(x => x.status === 'queued' && ums.find(y => y.id === x.umId)).length;
+  const failed = S.media.filter(x => x.status === 'failed' && ums.find(y => y.id === x.umId)).length;
+  const nb = (k, ic, t) => `<button data-act="ctab" data-v="${k}" class="${tab === k ? 'on' : ''}">${ic}<span>${t}</span></button>`;
+  const remain = Math.round(f.durationMin * (1 - f.progress / 100) + 0);
+  const head = { list:['담당 UM', `<span class="pill">${PHASES[f.phase]}${f.phase !== 'landed' && f.progress > 0 ? ` · 도착까지 ${Math.floor(remain/60)}시간 ${String(remain%60).padStart(2,'0')}분` : ''}</span>`],
+    status:[`${esc(m.name)} · 상태 체크`, `<span class="pill">좌석 ${m.seat} · 마지막 전송 ${hm(m.lastStatusAt)}</span>`],
+    camera:[`${esc(m.name)} 촬영 · 업로드`, consentOK(m.id,'shoot') ? '<span class="pill ok">촬영 동의 확인됨</span>' : '<span class="pill bad">촬영 미동의</span>'],
+    handoff:[`${esc(m.name)} 도착 인계`, `<span class="pill">${m.stage >= 9 ? '최종 인계 완료' : m.stage >= 8 ? '지상직원 인계 완료' : m.stage === 7 ? '착륙 후 · 지상직원 인계 대기' : '착륙 전'}</span>`] }[tab];
+  const body = { list:cList, status:cStatus, camera:cCamera, handoff:cHandoff }[tab](p, u, ums, m, f);
+  return `<div class="crew">
+    <aside class="c-side"><div class="c-brand"><b>UM Link 승무원</b><span class="mono">${esc(f.no)} · ${f.from} → ${f.to}</span></div>
+      <nav class="c-nav">${nb('list', I.list, '담당 UM')}${nb('status', I.clip, '상태 체크')}${nb('camera', I.cam, '촬영 · 업로드')}${nb('handoff', I.flag, '도착 인계')}</nav>
+      <div class="c-net"><div class="row"><span class="lbl2 ${S.net.wifi ? '' : 'off'}">기내 Wi-Fi ${S.net.wifi ? '연결됨' : '끊김'}</span><button class="switch ${S.net.wifi ? 'on' : ''}" data-act="wifi" aria-pressed="${S.net.wifi}" aria-label="기내 Wi-Fi 연결 시뮬레이션"></button></div>
+        <span>전송 대기 <b class="mono">${queued}</b>건${failed ? ` · 실패 <b class="mono">${failed}</b>건` : ''}</span><span style="font-size:11px;color:var(--navy-muted)">연결 상태는 시연용 스위치예요</span></div>
+    </aside>
+    <div class="c-main"><div class="c-head"><h2>${head[0]}</h2>${head[1]}</div><div class="c-body">${body}</div></div>
+  </div>`;
+}
+function umPicker(p, ums){ return ums.length > 1 ? `<div class="um-pick">${ums.map(x => `<button data-act="cum" data-v="${x.id}" class="${p.ui.cum === x.id ? 'on' : ''}">${esc(x.name)} · <span class="mono">${x.seat}</span></button>`).join('')}</div>` : ''; }
+function cList(p, u, ums, m, f){
+  const todos = [];
+  ums.forEach(x => {
+    if (x.stage === 4) todos.push([x, 'list', `${x.name} 탑승 완료 기록`]);
+    if (x.stage === 5 && minsSince(x.lastStatusAt) >= 30) todos.push([x, 'status', `${x.name} 상태 입력 (마지막 ${minsSince(x.lastStatusAt)}분 전)`]);
+    if (x.stage === 5 && (x.service.meal === 'progress' || x.service.drink === 'done') && !x.live.meal) todos.push([x, 'status', `식사 서비스 후 ${x.name} 상태 입력`]);
+    if (x.stage === 5 && consentOK(x.id, 'shoot') && f.phase === 'descent') todos.push([x, 'camera', `착륙 전 ${x.name} 기념 사진 (동의한 아이만)`]);
+    if (x.stage === 5 && f.phase === 'landed') todos.push([x, 'handoff', `${x.name} 착륙 확인 기록`]);
+    if (x.stage === 7) todos.push([x, 'handoff', `${x.name} 지상직원 인계`]);
+  });
+  if (!todos.length) todos.push([null, 'status', ums.some(x => x.stage === 5) ? '정기 상태 입력 (30분마다)' : '모든 할 일을 마쳤어요']);
+  return `
+  <div class="note"><span class="i">i</span><span>담당 UM <b>${ums.length}</b>명 · ${PHASES[f.phase]}. 탑승·상태·인계 기록은 보호자 앱에 바로 반영돼요.</span></div>
+  ${ums.map(x => { const shoot = consentOK(x.id, 'shoot'); const gc = x.guardians.filter(g => consentOf(x.id)).length;
+    return `<section class="card um-card"><div style="min-width:0"><div class="nm">${esc(x.name)} · 만 ${x.age}세 <span class="small muted">(가상)</span></div>
+      <div class="small muted">좌석 <span class="mono">${x.seat}</span> · 보호자 ${gc}명 연결됨 · ${x.stage === 4 ? '탑승 확인 필요' : `마지막 상태 <span class="mono">${hm(x.lastStatusAt)}</span> ${esc(x.lastStatusText)}`}</div>
+      <div class="row" style="margin-top:8px">${shoot ? '<span class="pill ok">촬영 동의됨</span>' : '<span class="pill bad">촬영 미동의</span>'}${consentOK(x.id, 'ai') ? '<span class="pill">AI 처리 동의</span>' : ''}<span class="pill">${x.stage >= 9 ? '여정 완료' : '다음 · ' + esc(STAGES[x.stage].label)}</span></div></div>
+      <div class="stack" style="gap:8px">
+        ${x.stage === 4 ? `<button class="btn btn-navy btn-sm" data-act="board" data-id="${x.id}">탑승 완료 기록</button>` : ''}
+        <button class="btn btn-primary btn-sm" data-act="goto" data-tab="status" data-id="${x.id}" ${x.stage === 5 ? '' : 'disabled'}>상태 입력</button>
+        <button class="btn btn-line btn-sm" data-act="goto" data-tab="camera" data-id="${x.id}" ${shoot ? '' : 'disabled'}>${shoot ? '촬영' : '촬영 불가'}</button>
+      </div></section>`; }).join('')}
+  <section class="card"><div class="sec-title" style="margin-bottom:4px">지금 할 일</div>${todos.map(([x, t, label]) => `<button class="todo" data-act="goto" data-tab="${t}" data-id="${x ? x.id : ''}"><span class="box"></span><span>${esc(label)}</span><span class="go">열기 →</span></button>`).join('')}</section>`;
+}
+function cStatus(p, u, ums, m, f){
+  const key = 'sc.' + m.id; const d = getPath(p.ui, key) || {};
+  const chip = (field, v, multi) => { const on = multi ? (d[field] || []).includes(v) : d[field] === v; return `<button class="chip ${on ? 'on' : ''}" data-act="chip" data-path="${key}.${field}" data-v="${esc(v)}" ${multi ? 'data-multi="1"' : ''}>${v}</button>`; };
+  const grp = (t, field, vals, multi) => `<div class="grp"><div class="lbl">${t}</div><div class="chips">${vals.map(v => chip(field, v, multi)).join('')}</div></div>`;
+  const has = d.meal || d.sleep || d.mood || d.loc || (d.service || []).length || d.memo;
+  const parts = has ? reportParts(d) : ['선택한 상태가 여기에 보여요'];
+  const prev = S.events.filter(e => e.umId === m.id && (e.kind === 'report' || (e.kind === 'stage' && e.stage === 4))).slice().reverse().slice(0, 5);
+  const pend = S.outbox.filter(o => o.umId === m.id);
+  const blocked = m.stage !== 5;
+  return `${umPicker(p, ums)}
+  ${blocked ? `<div class="note warn"><span class="i">!</span><span>${m.stage < 5 ? '탑승 완료를 먼저 기록해야 기내 상태를 보낼 수 있어요.' : '착륙 확인 이후에는 도착 인계 화면에서 기록해요.'}</span></div>` : ''}
+  <div class="c-cols">
+    <section class="card stack">
+      ${grp('식사', 'meal', ['잘 먹었어요','조금 먹었어요','안 먹었어요'])}
+      ${grp('수면', 'sleep', ['자는 중','깨어 있어요'])}
+      ${grp('기분', 'mood', ['좋아요','보통이에요','불안해해요'])}
+      ${grp('서비스 진행', 'service', ['음료 제공','기내식 제공','간식 제공','약 복용 확인'], true)}
+      ${grp('현재 위치', 'loc', ['좌석에 있어요','화장실','승무원과 함께','기타'])}
+      <div class="field"><label for="memo-${p.id}-${m.id}">메모 (선택)</label><textarea class="input" id="memo-${p.id}-${m.id}" data-bind="${key}.memo" placeholder="보호자에게 전할 한마디를 적어요" maxlength="120">${esc(d.memo || '')}</textarea></div>
+    </section>
+    <div class="stack">
+      <section class="card stack"><div class="lbl">보호자에게 보일 모습</div>
+        <div class="preview-card"><b>기내 상태 리포트</b><div style="margin-top:4px">${esc(parts.join(' · '))}</div><div class="small muted" data-memo-preview>${d.memo ? '“' + esc(d.memo) + '”' : ''}</div><div class="small muted" style="margin-top:6px">승무원 ${esc(u.name)} · <span class="mono">${hm(nowISO())}</span></div></div>
+        <button class="btn btn-primary btn-block" data-act="send-report" ${has && !blocked ? '' : 'disabled'}>${S.net.wifi ? '보호자에게 전송' : '저장해 두고 연결되면 전송'}</button>
+        <span class="small muted">Wi-Fi가 끊기면 저장해 두고 연결되면 자동으로 보내요.</span></section>
+      <section class="card"><div class="sec-title" style="margin-bottom:4px">이전 리포트</div>
+        ${pend.map(o => `<div class="feed"><div><span>${esc(reportParts(o.payload).join(' · '))}</span><span class="st warn small">대기 중</span></div></div>`).join('')}
+        ${prev.length ? `<div class="feed">${prev.map(e => `<div><span>${esc(e.kind === 'report' ? e.detail : '탑승 확인')}</span><span class="mono small muted">${hm(e.at)}</span></div>`).join('')}</div>` : (pend.length ? '' : '<div class="small muted">아직 보낸 리포트가 없어요.</div>')}
+      </section>
+    </div>
+  </div>`;
+}
+function cCamera(p, u, ums, m, f){
+  const shoot = consentOK(m.id, 'shoot');
+  const cam = p.ui.cam || (p.ui.cam = { mode:'photo', notify:true, caption:'' });
+  const drafts = (p.ui.drafts = p.ui.drafts || {})[m.id] = (p.ui.drafts[m.id] || []);
+  const lastDraft = drafts[drafts.length - 1];
+  const vfSrc = lastDraft ? lastDraft.src : (p.ui.vf || (p.ui.vf = genScene('window', 101)));
+  const mine = S.media.filter(x => x.umId === m.id && !x.deleted && (x.kind === 'photo' || x.kind === 'video')).slice().reverse().slice(0, 8);
+  const stLbl = s => ({ sent:['보호자에게 전송됨','ok'], queued:['대기 중 · 연결되면 자동 전송','warn'], failed:['전송 실패 · 다시 시도해 주세요','bad'] })[s] || [s, 'muted'];
+  return `${umPicker(p, ums)}
+  <div class="c-cols">
+    <div class="stack">
+      <div class="viewfinder">${shoot ? `<img src="${vfSrc}" alt="카메라 미리보기 (시뮬레이션)"><span class="vf-label">${lastDraft ? '방금 촬영함' : '카메라 화면 · 시뮬레이션'}</span>` : `<div class="blocked">촬영 동의가 없는 아이예요.<br>촬영 버튼이 꺼져 있어요.</div>`}</div>
+      <div class="shutter-row">
+        <button class="mode ${cam.mode === 'photo' ? 'on' : ''}" data-act="cam-mode" data-v="photo" ${shoot ? '' : 'disabled'}>사진</button>
+        <button class="shutter" data-act="shutter" aria-label="촬영" ${shoot ? '' : 'disabled'}></button>
+        <button class="mode ${cam.mode === 'video' ? 'on' : ''}" data-act="cam-mode" data-v="video" ${shoot ? '' : 'disabled'}>영상</button>
+      </div>
+      ${shoot ? `<label class="btn btn-line btn-sm" style="justify-self:center;cursor:pointer">기기 사진 불러오기<input type="file" accept="image/*" data-act-change="cam-file" hidden></label>` : ''}
+      <div class="note"><span class="i">i</span><span>다른 승객이 화면에 나오지 않게 찍어 주세요. 동의하지 않은 아이는 촬영 버튼이 꺼져요. 시연에서는 카메라 대신 가상 장면을 만들어 써요.</span></div>
+    </div>
+    <section class="card stack"><div class="sec-title">업로드 대기열</div>
+      <div>
+        ${drafts.map((x, i) => `<div class="q"><img src="${x.src}" alt=""><div><b>${x.kind === 'video' ? '영상' : '사진'} · <span class="mono">${hm(x.at)}</span></b><div class="st muted">올리기 전 · 이 기기에만 있어요</div></div><button class="btn btn-ghost btn-sm" data-act="draft-del" data-i="${i}">빼기</button></div>`).join('')}
+        ${mine.map(x => { const [t, k] = stLbl(x.status); return `<div class="q"><img src="${x.src}" alt=""><div><b>${x.kind === 'video' ? '영상' : '사진'} · <span class="mono">${hm(x.at)}</span></b><div class="st ${k}">${t}</div></div>${x.status === 'failed' ? `<button class="btn btn-line btn-sm" data-act="retry" data-id="${x.id}">재전송</button>` : '<span></span>'}</div>`; }).join('')}
+        ${!drafts.length && !mine.length ? '<div class="small muted">아직 촬영한 사진·영상이 없어요.</div>' : ''}
+      </div>
+      <div class="field"><label for="cap-${p.id}">한마디 (선택)</label><input class="input" id="cap-${p.id}" data-bind="cam.caption" value="${esc(cam.caption)}" placeholder="예: 창밖을 구경하고 있어요" maxlength="60"></div>
+      <label class="check"><input type="checkbox" data-act-change="cam-notify" ${cam.notify ? 'checked' : ''}><span>보호자에게 알림 함께 보내기</span></label>
+      <button class="btn btn-primary btn-block" data-act="upload" ${drafts.length && shoot ? '' : 'disabled'}>아카이브에 올리기${drafts.length ? ` (${drafts.length})` : ''}</button>
+    </section>
+  </div>`;
+}
+function cHandoff(p, u, ums, m, f){
+  const ho = (p.ui.ho = p.ui.ho || {})[m.id] = (p.ui.ho[m.id] || { emp:'', staffId:null, check:{} });
+  const st = staff(ho.staffId);
+  const landedDone = m.stage >= 7, groundDone = m.stage >= 8, finalDone = m.stage >= 9;
+  const checks = [['bag','가방 · 소지품 확인'],['doc','서류 파일 전달'],['note','비행 중 특이사항 전달']];
+  const allChk = checks.every(([k]) => ho.check[k]) && landedDone;
+  const lastLand = S.events.filter(e => e.umId === m.id && e.stage === 6).slice(-1)[0];
+  const gh = lastHandoff(m.id, 7), fh = lastHandoff(m.id, 8);
+  return `${umPicker(p, ums)}
+  <div class="c-cols">
+    <div class="stack">
+      <section class="card hstep ${landedDone ? 'done' : m.stage === 5 ? 'cur' : ''}"><div class="n">${landedDone ? I.check : ''}</div><div class="stack" style="gap:6px"><h3>1 · 착륙 확인</h3>
+        ${landedDone ? `<span class="small muted"><span class="mono">${hm(lastLand && lastLand.at)}</span> 착륙 알림이 보호자에게 전송됐어요</span>`
+          : m.stage === 5 ? `<span class="small muted">항공기 상태: ${PHASES[f.phase]}${f.phase !== 'landed' ? ' · 관리자 화면에서 운항 단계를 바꾸거나 바로 기록할 수 있어요' : ''}</span><button class="btn btn-navy btn-sm" style="justify-self:start" data-act="land" data-id="${m.id}">착륙 확인 기록</button>`
+          : `<span class="small muted">탑승 완료 후 진행해요.</span>`}</div></section>
+      <section class="card hstep ${groundDone ? 'done' : landedDone ? 'cur' : ''}"><div class="n">${groundDone ? I.check : ''}</div><div class="stack" style="gap:10px"><h3>2 · 지상직원에게 인계</h3>
+        ${groundDone ? `<span class="small muted">${esc(gh.toName)} · ${esc(gh.toOrg)} · <span class="mono">${hm(gh.at)}</span> · ${esc(gh.place)}</span>` : `
+        <span class="small muted">지상직원의 직원 QR을 스캔하거나 사번을 입력해요</span>
+        <div class="ho-grid"><button class="qr ${st ? 'got' : ''}" data-act="qr" ${landedDone ? '' : 'disabled'}>${st ? 'QR 확인됨' : 'QR 스캔<br><span style="font-weight:500;font-size:11px">시뮬레이션</span>'}</button>
+          <div class="stack" style="gap:10px">
+            <div class="row" style="flex-wrap:nowrap"><input class="input" id="emp-${p.id}-${m.id}" data-bind="ho.${m.id}.emp" value="${esc(ho.emp)}" placeholder="사번 예: L-3307" ${landedDone ? '' : 'disabled'}><button class="btn btn-line btn-sm" data-act="emp-check" ${landedDone ? '' : 'disabled'}>확인</button></div>
+            <dl class="kv"><dt>인수 직원</dt><dd>${st ? `${esc(st.name)} · ${esc(st.org)}` : '<span class="muted">미확인</span>'}</dd><dt>시간 · 장소</dt><dd><span class="mono">${hm(nowISO())}</span> · ${f.to} ${f.arrGate}번 게이트</dd></dl>
+            <button class="btn btn-primary btn-block" data-act="ground-handoff" ${st && allChk ? '' : 'disabled'}>인계 완료로 기록</button>
+            ${landedDone && !(st && allChk) ? '<span class="small muted">인수 직원 확인과 인계 전 확인 항목이 모두 필요해요.</span>' : ''}
+          </div></div>`}</div></section>
+      <section class="card hstep ${finalDone ? 'done' : groundDone ? 'cur' : ''}"><div class="n">${finalDone ? I.check : ''}</div><div class="stack" style="gap:6px"><h3>3 · 최종 인수자 확인</h3>
+        <span class="small muted">${finalDone ? `${esc(fh.toName)}에게 인계 완료 · <span class="mono">${hm(fh.at)}</span> · 보호자 앱에 표시됐어요` : '이후 단계는 지상직원이 처리해요. 완료되면 보호자 앱에 표시돼요.'}</span></div></section>
+    </div>
+    <section class="card"><div class="sec-title" style="margin-bottom:4px">인계 전 확인</div>
+      ${checks.map(([k, t]) => `<label class="check"><input type="checkbox" data-act-change="ho-check" data-k="${k}" ${ho.check[k] || groundDone ? 'checked' : ''} ${groundDone ? 'disabled' : ''}><span>${t}</span></label><hr class="divider">`).join('')}
+      <label class="check"><input type="checkbox" disabled ${landedDone ? 'checked' : ''}><span>착륙 알림 보호자 전송 <span class="small muted">(착륙 확인 시 자동)</span></span></label>
+    </section>
+  </div>`;
+}
+
+/* ---------- 관리자 ---------- */
+function renderAdmin(p, u){
+  const tab = p.ui.atab || 'ops';
+  const tb = (k, t) => `<button data-act="atab" data-v="${k}" class="${tab === k ? 'on' : ''}">${t}</button>`;
+  const body = { ops:aOps, flight:aFlight, ums:aUms, consent:aConsent, orders:aOrders, perm:aPerm }[tab](p, u);
+  return `<div class="admin"><nav class="a-tabs">${tb('ops','운영 현황')}${tb('flight','항공편')}${tb('ums','UM 여정')}${tb('consent','동의 · 삭제')}${tb('orders','상품 · 주문')}${tb('perm','권한 설계')}</nav><div class="a-body">${body}</div></div>`;
+}
+function aOps(){
+  const t = (k, v) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div></div>`;
+  return `<div class="tiles">${t('운항 편', S.flights.length)}${t('UM 아동 (가상)', S.ums.length)}${t('인계 기록', S.handoffs.length)}${t('전송 대기', S.outbox.length + S.media.filter(x => x.status === 'queued').length)}${t('테스트 주문', S.orders.length)}${t('삭제 요청', S.privacyRequests.filter(r => r.status !== 'done').length)}</div>
+  <section class="card stack"><div class="sec-title">시연 제어</div>
+    <label class="check"><input type="checkbox" data-act-change="fail-uploads" ${S.net.failUploads ? 'checked' : ''}><span>업로드 실패 상황 재현 (승무원 업로드가 '전송 실패'로 기록돼요)</span></label>
+    <div class="row"><span>기내 Wi-Fi</span><button class="switch ${S.net.wifi ? 'on' : ''}" data-act="wifi" aria-label="기내 Wi-Fi"></button><span class="small muted">${S.net.wifi ? '연결됨' : '끊김'}</span></div>
+  </section>
+  <section class="card"><div class="sec-title" style="margin-bottom:8px">최근 기록</div><div class="feed">${S.events.slice().sort((a,b) => b.at.localeCompare(a.at)).slice(0, 8).map(e => `<div><span>${esc(umOf(e.umId).name)} · ${esc(e.title)} <span class="small muted">${esc(e.by)}</span></span><span class="mono small muted">${hm(e.at)}</span></div>`).join('')}</div></section>
+  <div class="note"><span class="i">i</span><span>관리자는 운영 데이터와 주문 상태만 보고, 보호자 전용 사진·영상 원본은 보지 않아요.</span></div>`;
+}
+function aFlight(p){
+  const f = S.flights[0];
+  return `<section class="card stack"><div class="sec-title">${esc(f.no)} · ${f.from} → ${f.to} <span class="pill sim">가상 항공편</span></div>
+    <div class="form-grid">
+      <div class="field"><label for="a-delay-${p.id}">지연</label><select class="input" id="a-delay-${p.id}" data-act-change="a-delay">${[0,15,30,60,90].map(v => `<option value="${v}" ${f.delayMin === v ? 'selected' : ''}>${v ? v + '분 지연' : '정시'}</option>`).join('')}</select></div>
+      <div class="field"><label for="a-gate-${p.id}">출발 게이트</label><div class="row" style="flex-wrap:nowrap"><input class="input" id="a-gate-${p.id}" data-bind="agate" value="${esc(p.ui.agate ?? f.gate)}"><button class="btn btn-line btn-sm" data-act="a-gate">변경</button></div></div>
+      <div class="field"><label>출발 · 도착 예정 (각 공항 현지 시각)</label><div class="input mono" style="display:flex;align-items:center">${f.from} ${depTime(f)} → ${f.to} ${arrTime(f)} · ${durTxt(f)}</div></div>
+    </div>
+    <div class="field"><span class="lbl">운항 단계 (항공기 위치 시뮬레이션)</span><div class="chips">${Object.keys(PHASES).map(k => `<button class="chip ${f.phase === k ? 'on' : ''}" data-act="a-phase" data-v="${k}">${PHASES[k]}</button>`).join('')}</div></div>
+    <div class="field"><label for="a-prog-${p.id}">비행 진행률 <span class="mono">${f.progress}%</span></label><input type="range" id="a-prog-${p.id}" min="0" max="100" step="5" value="${f.progress}" data-act-change="a-progress"></div>
+    <div class="note"><span class="i">i</span><span>지연·게이트 변경은 보호자에게 항공편 알림으로 전송돼요. 실제 운항 정보 API는 연동되지 않았어요.</span></div>
+  </section>`;
+}
+function aUms(p){
+  return S.ums.map(m => { const fp = (p.ui.pick = p.ui.pick || {})[m.id] ?? m.pickup;
+    return `<section class="card stack"><div class="sec-title">${esc(m.name)} (가상) · ${esc(m.code)} <span class="pill">${m.stage >= 9 ? '여정 완료' : esc(STAGES[m.stage].label)}</span></div>
+    <div class="form-grid">
+      <div class="field"><label for="a-stage-${p.id}-${m.id}">시연용 단계 지정</label><select class="input" id="a-stage-${p.id}-${m.id}" data-act-change="a-stage" data-id="${m.id}">${[...STAGES.map((s, i) => [i, s.label + ' 진행 중']), [9, '여정 완료']].map(([i, t]) => `<option value="${i}" ${m.stage === i ? 'selected' : ''}>${t}</option>`).join('')}</select></div>
+      <div class="field"><label>좌석 · 담당</label><div class="input" style="display:flex;align-items:center"><span class="mono">${m.seat}</span>&nbsp;· 승무원 ${esc(user(m.crewId).name)}</div></div>
+    </div>
+    ${m.stage === 8 ? `<div class="card soft stack"><b>지상직원 시뮬레이션 · 최종 인계</b><div class="field"><label for="a-pick-${p.id}-${m.id}">마중 나온 사람 (보호자 지정)</label><input class="input" id="a-pick-${p.id}-${m.id}" data-bind="pick.${m.id}" value="${esc(fp)}"></div><button class="btn btn-primary" data-act="a-final" data-id="${m.id}">인증 코드 확인 · 최종 인계 완료</button></div>` : ''}
+    <span class="small muted">단계를 직접 바꾸면 '관리자 조정'으로 기록되고 알림은 보내지 않아요.</span></section>`; }).join('');
+}
+function aConsent(p){
+  return `<div class="tbl-wrap"><table><thead><tr><th>아동</th><th>보호자</th><th>필수 동의</th><th>촬영</th><th>AI 처리</th><th>보관</th></tr></thead><tbody>
+    ${S.ums.map(m => { const c = consentOf(m.id); const g = user(m.guardians[0]);
+      const s = k => c ? (c[k].granted ? `<span class="pill ok">동의 ${hm(c[k].at)}</span>` : c[k].withdrawnAt ? `<span class="pill warn">철회 ${hm(c[k].withdrawnAt)}</span>` : '<span class="pill">미동의</span>') : '—';
+      return `<tr><td>${esc(m.name)}</td><td>${esc(g.name)}</td><td>${c ? `<span class="pill ok">${hm(c.requiredAt)}</span>` : '<span class="pill warn">미완료</span>'}</td><td>${s('shoot')}</td><td>${s('ai')}</td><td>${c ? ({ '30':'30일', '90':'90일', manual:'직접 삭제' })[c.retention] : '—'}</td></tr>`; }).join('')}
+  </tbody></table></div>
+  <section class="card stack"><div class="sec-title">개인정보 삭제 요청</div>
+    ${S.privacyRequests.length ? S.privacyRequests.map(r => `<div class="row between"><span>${esc(umOf(r.umId).name)} · ${esc(user(r.guardianId).name)} · <span class="mono">${hm(r.at)}</span></span>${r.status === 'done' ? `<span class="pill ok">처리 완료 ${hm(r.doneAt)}</span>` : `<button class="btn btn-primary btn-sm" data-act="a-pi-done" data-id="${r.id}">삭제 처리</button>`}</div>`).join('') : '<span class="small muted">접수된 요청이 없어요.</span>'}
+  </section>
+  <section class="card row between"><div><b>보호자 동의 초기화</b><div class="small muted">도윤 보호자 계정의 첫 로그인 동의 절차를 다시 시연해요.</div></div><button class="btn btn-line btn-sm" data-act="a-reset-consent" data-id="um2">도윤 동의 초기화</button></section>`;
+}
+function aOrders(){
+  return `<div class="tiles">${S.products.map(pr => `<div class="tile"><div class="k">${esc(pr.name)}</div><div class="v mono">${won(pr.price)}</div><div class="small muted">주문 ${S.orders.filter(o => o.productId === pr.id).length}건</div></div>`).join('')}</div>
+  <div class="tbl-wrap"><table><thead><tr><th>주문</th><th>아동</th><th>상품</th><th>금액</th><th>테스트 결제</th><th>주문 상태</th><th></th></tr></thead><tbody>
+    ${S.orders.length ? S.orders.slice().reverse().map(o => `<tr><td class="mono">${esc(o.id.toUpperCase())}<br><span class="muted">${hm(o.createdAt)}</span></td><td>${esc(umOf(o.umId).name)}</td><td>${esc(product(o.productId).name)}</td><td class="mono">${won(o.price)}</td><td>${PAY_STATUS[o.payment]}</td><td><span class="pill ${ORDER_STATUS[o.status][1]}">${ORDER_STATUS[o.status][0]}</span></td><td>${o.payment === 'test_approved' && o.status !== 'refunded' ? `<button class="btn btn-line btn-sm" data-act="a-refund" data-id="${o.id}">테스트 환불</button>` : ''}</td></tr>`).join('') : '<tr><td colspan="7" class="muted">테스트 주문이 없어요. 보호자 앱에서 상품을 신청해 보세요.</td></tr>'}
+  </tbody></table></div>
+  <div class="note"><span class="i">i</span><span>PG사 결제는 연동되지 않았어요. 모든 결제는 '테스트 승인'으로만 기록되고 실제 청구는 없어요.</span></div>`;
+}
+function aPerm(){
+  const rows = [
+    ['아동 여정·상태 조회', '본인 아이만', '담당 UM만', '전체 (운영)'],
+    ['상태 리포트 · 탑승/착륙 기록', '—', '담당 UM만', '단계 조정만'],
+    ['인계 기록 작성', '—', '담당 UM만', '최종 인계 (지상직원 대행)'],
+    ['촬영·업로드', '—', '촬영 동의된 담당 UM만', '—'],
+    ['사진·영상 원본 열람', '본인 아이 · 동의 + 구매 시', '본인이 올린 대기열만', '—'],
+    ['동의 변경·철회', '본인 아이만', '동의 여부(플래그)만 열람', '이력 열람'],
+    ['상품 구매 · 테스트 결제', '본인만', '—', '주문 열람 · 테스트 환불'],
+    ['개인정보 삭제', '요청 · 콘텐츠 즉시 삭제', '—', '요청 처리'],
+    ['보호자 연락처', '본인', '열람 불가', '열람 (운영 목적)'],
+  ];
+  return `<div class="tbl-wrap"><table><thead><tr><th>기능</th><th>보호자</th><th>객실승무원</th><th>관리자</th></tr></thead><tbody>${rows.map(r => `<tr>${r.map((c, i) => `<td class="${i && c === '—' ? 'perm-n' : ''}">${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+  <section class="card stack"><div class="sec-title">실제 배포 전 검토 항목</div>
+    <ul style="margin:0;padding-left:18px;display:grid;gap:6px" class="small">
+      <li>인증: 보호자 본인인증(휴대폰·PASS), 승무원·지상직원 사내 SSO와 기기 등록, 세션 만료</li>
+      <li>권한: 서버 측 역할 기반 접근 제어(RBAC)와 아동 단위 접근 검증 — 이 시제품은 화면 단에서만 검사해요</li>
+      <li>개인정보: 만 14세 미만 법정대리인 동의 증빙 보관, 보유 기간 자동 파기, 접속 기록 보관</li>
+      <li>파일: 사진·영상은 비공개 저장소 + 짧은 만료의 서명 URL, 업로드 시 EXIF 위치정보 제거</li>
+      <li>AI 처리: 외부 모델 사용 시 국외 이전·위탁 고지, 학습 사용 금지 계약</li>
+      <li>결제: PG 테스트 키 → 운영 키 전환, 환불·청약철회 정책, 동의와 결제의 독립성 유지</li>
+      <li>저장소: 시제품은 브라우저 저장소를 써요. 실제 서비스는 서버 DB와 실시간 동기화가 필요해요</li>
+    </ul></section>`;
+}
+
+/* ========== 이벤트 처리 ========== */
+const paneOf = el => { const pe = el.closest('[data-pane]'); return pe && panes.find(p => p.id === pe.dataset.pane); };
+const A = {
+  layout(p, el){ layout = el.dataset.v; if (layout === 'split') { if (!panes[1].session) panes[1].session = { userId:'g1' }; } persistUI(); renderAll(); },
+  reset(){ if (!resetArm) { resetArm = true; renderAll(); setTimeout(() => { if (resetArm) { resetArm = false; renderAll(); } }, 4000); return; } resetArm = false; panes.forEach(p => p.ui = {}); commit(s => { const n = seed(); Object.keys(s).forEach(k => delete s[k]); Object.assign(s, n); }); toast('시연 데이터를 처음 상태로 되돌렸어요.'); },
+  login(p, el){ p.session = { userId: el.dataset.uid }; p.ui = {}; persistUI(); renderAll(); },
+  logout(p){ p.session = null; p.ui = {}; persistUI(); renderAll(); },
+  /* 보호자 */
+  gtab(p, el){ p.ui.gtab = el.dataset.v; rerender(p); },
+  'gtab-go'(p, el){ p.ui.gsub = null; p.ui.gtab = el.dataset.v; rerender(p); },
+  gsub(p, el){ (p.ui.stack = p.ui.stack || []).push(p.ui.gsub || null); p.ui.gsub = el.dataset.v; rerender(p); },
+  gback(p){ const st = p.ui.stack || []; p.ui.gsub = st.length ? st.pop() : null; if (p.ui.gsub === 'checkout' && p.ui.coOrder) p.ui.gsub = st.length ? st.pop() : null; rerender(p); },
+
+  /* ===== 인수 코드 (지상직원 업무 추가 없음) ===== */
+  'pickup-issue'(p){
+    const u = pUser(p), m = umOf(u.umId); if (!can(u, 'pickup.issue', m)) return deny(p);
+    const code = genCode();
+    commit(s => { s.pickupCodes.push({ id:uid('pc'), umId:m.id, code, issuedBy:u.id,
+      issuedAt:nowISO(), expiresAt:addMin(nowISO(), CODE_TTL_MIN), usedAt:null, usedByName:null, verifiedBy:null }); });
+    toast(`인수 코드 ${code}를 발급했어요. 인수자에게 전달해 주세요.`, '', '보호자 앱');
+  },
+  'pickup-verify'(p, el){
+    const u = pUser(p), m = umOf(el.dataset.id);
+    if (!m || !can(u, 'pickup.verify', m)) return deny(p);
+    if (m.stage < 8) return toast('아직 도착 인계 전이에요.', 'err', '지상직원 앱');
+    if (m.stage >= 9) return toast('이미 인계가 끝났어요.', 'err', '지상직원 앱');
+    const inp = root.querySelector('#pc-in-' + p.id + '-' + m.id);
+    const typed = ((inp && inp.value) || '').replace(/\D/g, '');
+    const c = pickupCode(m.id);
+    if (!typed) return toast('코드를 입력해 주세요.', 'err', '지상직원 앱');
+    if (!codeLive(c)) return toast('쓸 수 있는 코드가 없어요. 보호자에게 재발급을 요청해 주세요.', 'err', '지상직원 앱');
+    if (typed !== c.code) return toast('코드가 맞지 않아요. 인수자에게 다시 확인해 주세요.', 'err', '지상직원 앱');
+    commit(s => {
+      const x = s.ums.find(y => y.id === m.id), f = s.flights[0], t = nowISO();
+      const who = x.pickup || '인수자';
+      const pc = s.pickupCodes.find(y => y.id === c.id);
+      pc.usedAt = t; pc.usedByName = who; pc.verifiedBy = u.name;
+      s.handoffs.push({ id:uid('ho'), umId:x.id, stage:8,
+        fromName: `${u.name} (지상직원)`, toOrg: u.org || '',
+        toName: who, place:`${f.to} 도착장`,
+        method:'보호자 발급 인수 코드 · 지상직원 신분 확인', at:t, status:'confirmed' });
+      addEvent(s, x.id, { stage:8, title:'최종 인계', detail:`${u.name} 지상직원이 인수 코드 확인 · ${who}에게 인계`, by:u.name, at:t });
+      x.stage = 9; x.lastStatusAt = t; x.lastStatusText = `${who}에게 인계 완료`;
+      notify(s, x.id, 'handoff', '인수 완료', `${who} 님에게 인계했어요. ${u.name} 지상직원이 신분증과 인수 코드를 확인했어요 · ${f.toCity} 도착장 ${hm(t)}`, { sub:'pickup' });
+    });
+    toast('인수를 확인했어요. 보호자에게 알림이 갔어요.', '', '지상직원 앱');
+  },
+  'ob-verify'(p){ p.ui.ob.verified = true; toast('법정대리인 확인을 마쳤어요 (시뮬레이션).', '', '보호자 앱'); rerender(p); },
+  'ob-terms'(p){ p.ui.ob.terms = !p.ui.ob.terms; rerender(p); },
+  'ob-next'(p){ p.ui.ob.step = 2; rerender(p); },
+  'ob-step'(p, el){ p.ui.ob.step = +el.dataset.v; rerender(p); },
+  'ob-opt'(p, el){ const k = el.dataset.k; p.ui.ob[k] = !p.ui.ob[k]; if (k === 'shoot' && !p.ui.ob.shoot) p.ui.ob.ai = false; if (k === 'ai' && p.ui.ob.ai && !p.ui.ob.shoot) { p.ui.ob.ai = false; toast('AI 처리는 촬영·보관에 동의한 사진에만 쓸 수 있어요. 촬영 동의를 먼저 켜 주세요.', 'err', '보호자 앱'); } rerender(p); },
+  'ob-finish'(p){
+    const u = pUser(p), ob = p.ui.ob, t = nowISO();
+    commit(s => { s.consents = s.consents.filter(c => c.umId !== u.umId);
+      s.consents.push({ id:uid('cr'), umId:u.umId, guardianId:u.id, verifiedAt:t, requiredAt:t, items:{ child:true, contact:true, staff:true },
+        shoot:{ granted:ob.shoot, at: ob.shoot ? t : null, withdrawnAt:null }, ai:{ granted:ob.ai, at: ob.ai ? t : null, withdrawnAt:null }, retention: ob.retention,
+        history:[{ at:t, text:`필수 동의 · 촬영 ${ob.shoot ? '동의' : '미동의'} · AI 처리 ${ob.ai ? '동의' : '미동의'}` }] });
+      reconcile(s, u.umId); });
+    p.ui.ob = null; toast('동의를 저장했어요. 아이의 여정을 확인할 수 있어요.', '', '보호자 앱');
+  },
+  nf(p, el){ p.ui.nf = el.dataset.v; rerender(p); },
+  af(p, el){ p.ui.af = el.dataset.v; rerender(p); },
+  'read-all'(p){ const u = pUser(p); commit(s => s.notifications.forEach(n => { if (n.guardianId === u.id) n.read = true; })); },
+  'read-one'(p, el){
+    const n = S.notifications.find(x => x.id === el.dataset.id); if (!n) return;
+    const t = notiTarget(n);
+    /* 이동할 화면을 먼저 정해 둬요. commit()이 전체를 다시 그리기 때문이에요. */
+    p.ui.stack = [];                 // 알림에서 출발하므로 뒤로가기 기록을 비워요
+    p.ui.gsub = t.sub || null;
+    p.ui.gtab = t.sub ? (p.ui.gtab || 'home') : (t.tab || 'home');
+    if (!n.read) commit(s => { const x = s.notifications.find(y => y.id === n.id); if (x) x.read = true; });
+    else rerender(p);
+  },
+  'notify-toggle'(p){ const u = pUser(p); commit(s => { const x = s.users.find(y => y.id === u.id); x.notify = !x.notify; }); },
+  'consent-toggle'(p, el){
+    const u = pUser(p), m = umOf(u.umId), k = el.dataset.k; if (!can(u, 'consent.write', m)) return deny(p);
+    const c = consentOf(m.id); const turnOn = !c[k].granted;
+    if (k === 'ai' && turnOn && !c.shoot.granted) return toast('AI 처리는 촬영·보관 동의가 있어야 켤 수 있어요.', 'err', '보호자 앱');
+    commit(s => { const cc = s.consents.find(x => x.umId === m.id); const t = nowISO();
+      const set = (kk, on) => { cc[kk].granted = on; if (on) { cc[kk].at = t; cc[kk].withdrawnAt = null; } else cc[kk].withdrawnAt = t; };
+      set(k, turnOn); let txt = `${CONSENT_LABEL[k]} ${turnOn ? '동의' : '철회'}`;
+      if (k === 'shoot' && !turnOn && cc.ai.granted) { set('ai', false); txt += ' (AI 처리 동의도 함께 철회)'; }
+      cc.history.push({ at:t, text:txt }); reconcile(s, m.id);
+      s.notifications.push({ id:uid('nt'), guardianId:u.id, umId:m.id, type:'privacy', title:'동의 변경', body:txt, at:t, read:true }); });
+    toast(`${CONSENT_LABEL[k]} ${turnOn ? '동의했어요' : '철회했어요'}. 승무원 앱에도 바로 반영돼요.`, '', '보호자 앱');
+  },
+  'del-arm'(p, el){ p.ui.delArm = el.dataset.v || null; rerender(p); },
+  'del-media'(p){ const u = pUser(p), m = umOf(u.umId); if (!can(u, 'media.delete', m)) return deny(p); const n = sentMedia(m.id).length;
+    commit(s => { s.media.forEach(x => { if (x.umId === m.id && !x.deleted) { x.deleted = true; x.src = null; x.frames = []; } }); s.consents.find(c => c.umId === m.id).history.push({ at:nowISO(), text:`콘텐츠 ${n}개 삭제` }); });
+    p.ui.delArm = null; toast(`콘텐츠 ${n}개를 삭제했어요.`, '', '보호자 앱'); },
+  'pi-request'(p){ const u = pUser(p), m = umOf(u.umId); if (!can(u, 'privacy.request', m)) return deny(p);
+    commit(s => { s.privacyRequests.push({ id:uid('pr'), umId:m.id, guardianId:u.id, at:nowISO(), status:'requested' }); notify(s, m.id, 'privacy', '개인정보 삭제 요청 접수', '운영자가 확인 후 처리하면 다시 알려 드려요.'); });
+    p.ui.delArm = null; },
+  'pick-product'(p, el){ const u = pUser(p), m = umOf(u.umId); const ex = activeOrder(m.id, el.dataset.id);
+    (p.ui.stack = p.ui.stack || []).push(p.ui.gsub || null);
+    if (ex && ex.status !== 'awaiting_payment') { p.ui.oid = ex.id; p.ui.gsub = 'order'; } else { p.ui.pid = el.dataset.id; p.ui.co = { ack:false }; p.ui.coOrder = ex ? ex.id : null; p.ui.gsub = 'checkout'; }
+    rerender(p); },
+  pay(p, el){
+    const u = pUser(p), m = umOf(u.umId); if (!can(u, 'order.write', m)) return deny(p);
+    const pr = product(p.ui.pid); const ok = el.dataset.v === 'ok'; let oid = p.ui.coOrder;
+    commit(s => {
+      let o = oid && s.orders.find(x => x.id === oid);
+      if (!o || o.status === 'payment_failed') { o = { id:uid('od'), guardianId:u.id, umId:m.id, productId:pr.id, price:pr.price, payment:'none', status:'awaiting_payment', createdAt:nowISO(), history:[{ at:nowISO(), text:`${pr.name} 선택 · ${won(pr.price)}` }] }; s.orders.push(o); }
+      oid = o.id;
+      if (ok) { o.payment = 'test_approved'; setOrder(o, 'paid', '테스트 결제 승인 · 실제 청구 없음'); notify(s, m.id, 'order', `${pr.name} 테스트 결제 승인`, '실제 결제가 아닌 시제품 테스트 결제예요.'); reconcile(s, m.id);
+        if (o.status === 'paid') setOrder(o, 'waiting_consent', '필요한 동의가 확인되면 제작을 시작해요'); }
+      else { o.payment = 'test_failed'; setOrder(o, 'payment_failed', '테스트 결제 거절 (재현)'); }
+    });
+    if (ok) { p.ui.oid = oid; p.ui.gsub = 'order'; p.ui.coOrder = null; toast('테스트 결제가 승인됐어요. 실제 청구는 없어요.', '', '보호자 앱'); }
+    else { p.ui.coOrder = oid; toast('테스트 결제가 거절됐어요 (재현용).', 'err', '보호자 앱'); }
+    rerender(p);
+  },
+  'open-order'(p, el){ (p.ui.stack = p.ui.stack || []).push(p.ui.gsub || null); p.ui.oid = el.dataset.id; p.ui.gsub = 'order'; rerender(p); },
+  'open-collage'(p){ const u = pUser(p); if (!consentOK(u.umId, 'ai')) return toast('AI 처리 동의가 꺼져 있어 AI 콜라주를 쓸 수 없어요.', 'err', '보호자 앱'); (p.ui.stack = p.ui.stack || []).push(p.ui.gsub || null); p.ui.gsub = 'collage'; rerender(p); },
+  'save-device'(p){ const u = pUser(p); if (!photoPass(u.umId)) { A['pick-product'](p, { dataset:{ id:'p_photo' } }); return; } toast('저장할 사진을 눌러 연 뒤 저장해 주세요.', '', '보호자 앱'); },
+  view(p, el){ (p.ui.stack = p.ui.stack || []).push(p.ui.gsub || null); p.ui.mid = el.dataset.id; p.ui.gsub = 'viewer'; p.ui.saveHint = null; rerender(p); },
+  'save-one'(p, el){ const id = el.dataset.id; commit(s => { const x = s.media.find(y => y.id === id); if (x) x.savedAt = nowISO(); }); p.ui.saveHint = id; rerender(p); },
+  'del-one-arm'(p, el){ p.ui.delOne = el.dataset.id || null; rerender(p); },
+  'del-one'(p, el){ const u = pUser(p), m = umOf(u.umId); if (!can(u, 'media.delete', m)) return deny(p); const id = el.dataset.id;
+    commit(s => { const x = s.media.find(y => y.id === id && y.umId === m.id); if (x) { x.deleted = true; x.src = null; x.frames = []; } });
+    p.ui.delOne = null; A.gback(p); toast('콘텐츠를 삭제했어요.', '', '보호자 앱'); },
+  'cl-pick'(p, el){ const cl = p.ui.cl; const id = el.dataset.id; const i = cl.sel.indexOf(id); if (i >= 0) cl.sel.splice(i, 1); else if (cl.sel.length < 6) cl.sel.push(id); else toast('최대 6개까지 고를 수 있어요.', 'err', '보호자 앱'); rerender(p); },
+  'cl-style'(p, el){ p.ui.cl.style = el.dataset.v; rerender(p); },
+  'cl-regen'(p){ const cl = p.ui.cl; cl.variant++; cl.sel.push(cl.sel.shift()); const t = [`${umOf(pUser(p).umId).name}의 첫 비행`, '구름 위에서 보낸 하루', '혼자서도 씩씩하게', '하늘길 여행 일기']; cl.title = t[cl.variant % t.length]; rerender(p); },
+  async 'cl-save'(p){
+    const u = pUser(p), m = umOf(u.umId), f = flightOf(m), cl = p.ui.cl;
+    if (!consentOK(m.id, 'ai') || !consentOK(m.id, 'shoot')) return toast('동의가 확인되지 않아 저장할 수 없어요.', 'err', '보호자 앱');
+    const o = activeOrder(m.id, 'p_collage'); if (!o) return;
+    try {
+      const src = await composeCollage(cl, f);
+      commit(s => { const id = uid('cl'); s.media.push({ id, umId:m.id, kind:'collage', src, title:cl.title, caption:cl.title, group:'ai', by:'AI 콜라주 (시뮬레이션)', at:nowISO(), status:'sent', deleted:false, sourceIds:cl.sel.slice() });
+        const oo = s.orders.find(x => x.id === o.id); oo.outputId = id; setOrder(oo, 'ready', `AI 콜라주 저장 · “${cl.title}”`); notify(s, m.id, 'order', 'AI 콜라주를 아카이브에 저장했어요', cl.title, { tab:'archive' }); });
+      p.ui.stack = [null]; p.ui.gsub = 'viewer'; p.ui.mid = S.orders.find(x => x.id === o.id).outputId; toast('아카이브에 저장했어요.', '', '보호자 앱'); rerender(p);
+    } catch (e) { toast('콜라주 이미지를 만들지 못했어요. 사진을 다시 골라 주세요.', 'err', '보호자 앱'); }
+  },
+  /* 비행 여정 지도 */
+  'fx-play'(p){ const fp = p.fp; if (!fp) return; if (fp.playing) fp.playing = false; else { if (fp.t >= 1) fp.t = 0; fp.playing = true; fp.synced = false; } fxUpdate(p, true); },
+  'fx-reset'(p){ const fp = p.fp; if (!fp) return; fp.t = 0; fp.playing = false; fp.synced = false; fxUpdate(p, true); },
+  'fx-speed'(p, el){ if (!p.fp) return; p.fp.speed = el.dataset.v; fxUpdate(p); },
+  'fx-sync'(p){ const fp = p.fp, u = pUser(p); if (!fp || !u) return; fp.synced = true; fp.playing = false; fp.t = flightOf(umOf(u.umId)).progress / 100; fxUpdate(p, true); },
+  'fx-follow'(p){ if (!p.fp || !p.fm) return; p.fp.follow = !p.fp.follow; p.fm.syncTools(); if (p.fp.follow) p.fm.draw(true); },
+  'fx-fit'(p){ if (!p.fp || !p.fm) return; p.fp.follow = false; p.fm.syncTools(); p.fm.fit(); },
+  'fx-zoom'(p, el){ if (p.fm) p.fm.zoom(+el.dataset.v); },
+  'fx-movie'(p){ if (!window.UMFlightJourney) return toast('여정 영상 파일(flight-journey.js)을 불러오지 못했어요. 같은 폴더에 있는지 확인해 주세요.', 'err', '보호자 앱'); if (p.fp && p.fp.playing) { p.fp.playing = false; fxUpdate(p, true); } window.UMFlightJourney.openModal(); },
+  /* 승무원 */
+  ctab(p, el){ p.ui.ctab = el.dataset.v; rerender(p); },
+  cum(p, el){ p.ui.cum = el.dataset.v; rerender(p); },
+  goto(p, el){ if (el.dataset.id) p.ui.cum = el.dataset.id; p.ui.ctab = el.dataset.tab; rerender(p); },
+  wifi(p){ const on = !S.net.wifi; const n = S.outbox.length + S.media.filter(x => x.status === 'queued').length;
+    commit(s => { s.net.wifi = on; if (on) flushOutbox(s); });
+    toast(on ? (n ? `Wi-Fi 연결 · 대기 중이던 ${n}건을 보냈어요.` : '기내 Wi-Fi에 연결됐어요.') : '기내 Wi-Fi 연결이 끊겼어요. 기록은 저장해 두고 연결되면 보내요.', '', paneLabel(p)); },
+  board(p, el){
+    const u = pUser(p), m = umOf(el.dataset.id); if (!can(u, 'stage.write', m)) return deny(p);
+    if (m.stage !== 4) return;
+    commit(s => { const x = s.ums.find(y => y.id === m.id); const t = nowISO(); const es = s.staff.find(y => y.id === x.escortId);
+      s.handoffs.push({ id:uid('ho'), umId:x.id, stage:4, fromName:es.name, toName:`${u.name} (승무원)`, toOrg:`${s.flights[0].no} 객실`, place:`${s.flights[0].gate}번 게이트 · 탑승교`, method:'승무원 태블릿 확인', at:t, status:'confirmed' });
+      addEvent(s, x.id, { stage:4, title:'탑승 완료', detail:`좌석 ${x.seat} · 승무원 ${u.name} 확인`, by:u.name, at:t });
+      x.stage = 5; x.live = { ...x.live, location:'좌석에 있어요', since:t }; x.lastStatusAt = t; x.lastStatusText = `탑승 완료 · 좌석 ${x.seat}`;
+      notify(s, x.id, 'handoff', '탑승 완료', `${x.name}이(가) ${x.seat} 좌석에 탑승했어요. ${es.name} 직원 → ${u.name} 승무원 인계.`); });
+    toast(`${m.name} 탑승 완료를 기록했어요. 보호자 앱 타임라인이 갱신됐어요.`, '', '승무원 앱');
+  },
+  chip(p, el){ const path = el.dataset.path, v = el.dataset.v; const cur = getPath(p.ui, path);
+    if (el.dataset.multi) { const arr = Array.isArray(cur) ? cur.slice() : []; const i = arr.indexOf(v); if (i >= 0) arr.splice(i, 1); else arr.push(v); setPath(p.ui, path, arr); }
+    else setPath(p.ui, path, cur === v ? null : v); rerender(p); },
+  'send-report'(p){
+    const u = pUser(p), m = umOf(p.ui.cum); if (!can(u, 'status.write', m)) return deny(p);
+    if (m.stage !== 5) return toast('기내 단계에서만 상태 리포트를 보낼 수 있어요.', 'err', '승무원 앱');
+    const d = { ...(getPath(p.ui, 'sc.' + m.id) || {}) }; d.at = nowISO(); d.service = (d.service || []).slice(); d.memo = (d.memo || '').trim();
+    const online = S.net.wifi;
+    commit(s => { if (online) applyReport(s, m.id, d, u.name); else s.outbox.push({ id:uid('ob'), type:'report', umId:m.id, payload:d, by:u.name, at:d.at }); });
+    setPath(p.ui, 'sc.' + m.id, {}); rerender(p);
+    toast(online ? `${m.name} 상태 리포트를 보호자에게 보냈어요.` : 'Wi-Fi가 끊겨 있어 저장해 뒀어요. 연결되면 자동으로 보내요.', '', '승무원 앱');
+  },
+  'cam-mode'(p, el){ p.ui.cam.mode = el.dataset.v; rerender(p); },
+  shutter(p){ const m = umOf(p.ui.cum); if (!consentOK(m.id, 'shoot')) return toast('촬영 동의가 없어 촬영할 수 없어요.', 'err', '승무원 앱');
+    const f = flightOf(m); const kinds = m.stage >= 7 ? ['arrival'] : m.stage === 5 ? (f.phase === 'boarding' ? ['window'] : ['window','clouds','meal']) : ['gate','terminal'];
+    const scene = kinds[Math.floor(Math.random() * kinds.length)];
+    const ds = p.ui.drafts[m.id]; ds.push({ kind:p.ui.cam.mode, scene, src: genScene(scene, Math.floor(Math.random() * 1e6)), at:nowISO() }); rerender(p); },
+  'draft-del'(p, el){ p.ui.drafts[p.ui.cum].splice(+el.dataset.i, 1); rerender(p); },
+  upload(p){
+    const u = pUser(p), m = umOf(p.ui.cum); if (!can(u, 'media.upload', m)) return deny(p);
+    if (!consentOK(m.id, 'shoot')) return toast('촬영 동의가 철회돼 올릴 수 없어요. 촬영본은 기기에서 지워 주세요.', 'err', '승무원 앱');
+    const ds = p.ui.drafts[m.id]; const cap = (p.ui.cam.caption || '').trim(); const notifyOn = p.ui.cam.notify;
+    const group = m.stage >= 7 ? 'arrival' : m.stage >= 5 ? 'inflight' : 'checkin'; const online = S.net.wifi; let failed = 0;
+    commit(s => { ds.forEach((d, i) => { const item = { id:uid('md'), umId:m.id, kind:d.kind, scene:d.scene, src:d.src, group, caption: i === 0 ? cap : '', by:u.name, at:d.at, notify: notifyOn && i === ds.length - 1, status:'queued', deleted:false, consentAt: s.consents.find(c => c.umId === m.id).shoot.at };
+      s.media.push(item); if (online) { sendMediaNow(s, item); if (item.status === 'failed') failed++; } }); });
+    const n = ds.length; p.ui.drafts[m.id] = []; p.ui.cam.caption = ''; rerender(p);
+    toast(!online ? `${n}건을 대기열에 저장했어요. 연결되면 자동으로 보내요.` : failed ? `${failed}건 전송에 실패했어요. 재전송을 눌러 주세요.` : `${n}건을 보호자 아카이브에 올렸어요.`, failed ? 'err' : '', '승무원 앱');
+  },
+  retry(p, el){ const id = el.dataset.id; if (!S.net.wifi) return toast('Wi-Fi가 끊겨 있어요. 연결되면 다시 보내 주세요.', 'err', '승무원 앱');
+    commit(s => { const x = s.media.find(y => y.id === id); if (x) { s.net.failUploads = false; sendMediaNow(s, x); } }); toast('다시 보냈어요. (실패 재현 설정을 껐어요)', '', '승무원 앱'); },
+  land(p, el){
+    const u = pUser(p), m = umOf(el.dataset.id); if (!can(u, 'stage.write', m) || m.stage !== 5) return deny(p);
+    commit(s => { const x = s.ums.find(y => y.id === m.id), f = s.flights[0], t = nowISO();
+      if (f.phase !== 'landed') { f.phase = 'landed'; f.progress = 100; }
+      addEvent(s, x.id, { stage:5, title:'비행 종료', detail:'기내 상태 리포트 종료', by:u.name, at:t });
+      addEvent(s, x.id, { stage:6, title:'착륙 확인', detail:`${f.toCity} 착륙 · 승무원 ${u.name} 확인`, by:u.name, at:t });
+      x.stage = 7; x.lastStatusAt = t; x.lastStatusText = '착륙 · 지상직원 인계 준비';
+      notify(s, x.id, 'flight', '착륙했어요', `${f.toCity}에 도착했어요. ${x.name}은(는) 승무원과 함께 지상직원 인계를 준비해요.`); });
+    toast(`${m.name} 착륙 확인을 기록하고 보호자에게 알렸어요.`, '', '승무원 앱');
+  },
+  qr(p){ const m = umOf(p.ui.cum); p.ui.ho[m.id].staffId = 's3'; p.ui.ho[m.id].emp = 'L-3307'; toast('지상직원 QR을 확인했어요 (시뮬레이션).', '', '승무원 앱'); rerender(p); },
+  'emp-check'(p){ const m = umOf(p.ui.cum); const h = p.ui.ho[m.id]; const st = S.staff.find(s => s.empNo.toLowerCase() === (h.emp || '').trim().toLowerCase());
+    if (!st) { h.staffId = null; toast('등록된 지상직원 사번이 아니에요. 예: L-3307', 'err', '승무원 앱'); } else { h.staffId = st.id; toast(`${st.name} · ${st.org} 확인`, '', '승무원 앱'); } rerender(p); },
+  'ground-handoff'(p){
+    const u = pUser(p), m = umOf(p.ui.cum); if (!can(u, 'handoff.write', m) || m.stage !== 7) return deny(p);
+    const h = p.ui.ho[m.id], st = staff(h.staffId);
+    commit(s => { const x = s.ums.find(y => y.id === m.id), f = s.flights[0], t = nowISO();
+      s.handoffs.push({ id:uid('ho'), umId:x.id, stage:7, fromName:`${u.name} (승무원)`, toName:st.name, toOrg:st.org, place:`${f.to} ${f.arrGate}번 게이트`, method: h.emp ? '직원 QR · 사번' : '직원 QR', at:t, status:'confirmed', checklist:{ ...h.check, landingNotice:true } });
+      addEvent(s, x.id, { stage:7, title:'지상직원 인계', detail:`${u.name} → ${st.name}`, by:u.name, at:t });
+      x.stage = 8; x.lastStatusAt = t; x.lastStatusText = `지상직원 ${st.name}과 도착장 이동`;
+      notify(s, x.id, 'handoff', '디지털 인계 완료', `${u.name} 승무원 → ${st.name} 지상직원 · ${f.to} ${f.arrGate}번 게이트`); });
+    toast('지상직원 인계를 기록했어요. 보호자 앱에 표시돼요.', '', '승무원 앱');
+  },
+  /* 관리자 */
+  atab(p, el){ p.ui.atab = el.dataset.v; rerender(p); },
+  'a-phase'(p, el){ const u = pUser(p); if (!can(u, 'flight.write')) return deny(p); const ph = el.dataset.v;
+    commit(s => { const f = s.flights[0]; const prev = f.phase; f.phase = ph; f.progress = PHASE_SIM[ph][2] || (ph === 'cruise' ? Math.max(f.progress, 10) : 0); if (ph === 'cruise') f.progress = Math.min(Math.max(f.progress, 15), 85);
+      if (ph === 'departed' && prev !== 'departed') s.ums.forEach(m => { if (m.stage >= 5) notify(s, m.id, 'flight', '이륙했어요', `${f.no}편이 출발했어요. 도착 예정 ${arrTime(f)}.`); }); }); },
+  'a-gate'(p){ const u = pUser(p); if (!can(u, 'flight.write')) return deny(p); const g = (p.ui.agate || '').trim(); const f = S.flights[0];
+    if (!g || g === f.gate) return toast('새 게이트 번호를 입력해 주세요.', 'err', '관리자');
+    commit(s => { const ff = s.flights[0]; const old = ff.gate; ff.gate = g; s.ums.forEach(m => notify(s, m.id, 'flight', '게이트 변경', `${old}번에서 ${g}번 게이트로 바뀌었어요.${m.stage <= 4 ? ' 아이도 직원과 함께 이동해요.' : ''}`)); });
+    p.ui.agate = null; toast('게이트 변경을 보호자에게 알렸어요.', '', '관리자'); },
+  'a-final'(p, el){ const u = pUser(p); const m = umOf(el.dataset.id); if (!can(u, 'um.write') || m.stage !== 8) return deny(p);
+    const who = ((p.ui.pick || {})[m.id] ?? m.pickup).trim() || m.pickup; const gh = lastHandoff(m.id, 7);
+    commit(s => { const x = s.ums.find(y => y.id === m.id), t = nowISO();
+      s.handoffs.push({ id:uid('ho'), umId:x.id, stage:8, fromName: gh ? gh.toName : '지상직원', toName: who, toOrg:'보호자 지정 인수자', place:`${s.flights[0].toCity} 공항 도착장`, method:'인증 코드 · 신분증 확인', at:t, status:'confirmed' });
+      addEvent(s, x.id, { stage:8, title:'최종 인계', detail:`${who}에게 인계`, by: gh ? gh.toName : '지상직원', at:t });
+      x.stage = 9; x.lastStatusAt = t; x.lastStatusText = `${who}에게 최종 인계 완료`;
+      notify(s, x.id, 'handoff', '최종 인계 완료', `${who}에게 ${x.name}을(를) 인계했어요. 여정이 끝났어요.`); });
+    toast('최종 인계를 기록했어요.', '', '관리자'); },
+  'a-pi-done'(p, el){ const u = pUser(p); if (!can(u, 'privacy.process')) return deny(p); const id = el.dataset.id;
+    commit(s => { const r = s.privacyRequests.find(x => x.id === id); r.status = 'done'; r.doneAt = nowISO();
+      s.media.forEach(x => { if (x.umId === r.umId) { x.deleted = true; x.src = null; x.frames = []; } });
+      s.events.forEach(e => { if (e.umId === r.umId) e.memo = ''; });
+      const c = s.consents.find(x => x.umId === r.umId); if (c) { ['shoot','ai'].forEach(k => { if (c[k].granted) { c[k].granted = false; c[k].withdrawnAt = nowISO(); } }); c.history.push({ at:nowISO(), text:'개인정보 삭제 요청 처리 · 콘텐츠·메모 삭제, 선택 동의 철회' }); }
+      reconcile(s, r.umId);
+      notify(s, r.umId, 'privacy', '개인정보 삭제 처리 완료', '콘텐츠와 메모를 삭제하고 선택 동의를 철회했어요. 안전 인계 기록은 보관 기간 후 파기돼요.'); });
+    toast('삭제 요청을 처리했어요.', '', '관리자'); },
+  'a-reset-consent'(p, el){ const id = el.dataset.id; commit(s => { s.consents = s.consents.filter(c => c.umId !== id); s.orders = s.orders.filter(o => o.umId !== id); }); panes.forEach(q => { if (pUser(q) && pUser(q).umId === id) q.ui = {}; }); toast('도윤 보호자 동의를 초기화했어요.', '', '관리자'); },
+  'a-refund'(p, el){ const u = pUser(p); if (!can(u, 'order.read')) return deny(p); const id = el.dataset.id;
+    commit(s => { const o = s.orders.find(x => x.id === id); o.payment = 'test_refunded'; setOrder(o, 'refunded', '관리자 테스트 환불'); notify(s, o.umId, 'order', `${s.products.find(x => x.id === o.productId).name} 테스트 환불`, '시제품 테스트 결제가 환불 처리됐어요. 실제 청구는 없었어요.'); }); },
+};
+const CH = {
+  'ob-req'(p, el){ p.ui.ob.req[el.dataset.k] = el.checked; rerender(p); },
+  'ob-ret'(p, el){ p.ui.ob.retention = el.value; },
+  retention(p, el){ const u = pUser(p); commit(s => { const c = s.consents.find(x => x.umId === u.umId); c.retention = el.value; c.history.push({ at:nowISO(), text:`보관 기간 변경 · ${({ '30':'여정 후 30일', '90':'여정 후 90일', manual:'직접 삭제할 때까지' })[el.value]}` }); }); },
+  'co-ack'(p, el){ p.ui.co.ack = el.checked; rerender(p); },
+  'cam-notify'(p, el){ p.ui.cam.notify = el.checked; },
+  async 'cam-file'(p, el){ const file = el.files && el.files[0]; if (!file) return; const m = umOf(p.ui.cum);
+    if (!file.type.startsWith('image/')) return toast('사진 파일만 올릴 수 있어요.', 'err', '승무원 앱');
+    try { const raw = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); }); const src = await downscale(raw);
+      p.ui.drafts[m.id].push({ kind:'photo', scene:'upload', src, at:nowISO() }); rerender(p); }
+    catch (e) { toast('사진을 읽지 못했어요. 다른 파일로 시도해 주세요.', 'err', '승무원 앱'); } },
+  'ho-check'(p, el){ p.ui.ho[p.ui.cum].check[el.dataset.k] = el.checked; rerender(p); },
+  'fail-uploads'(p, el){ commit(s => { s.net.failUploads = el.checked; }); },
+  'a-delay'(p, el){ const u = pUser(p); if (!can(u, 'flight.write')) return deny(p); const v = +el.value;
+    commit(s => { const f = s.flights[0]; f.delayMin = v;
+      s.ums.forEach(m => { const es = s.staff.find(x => x.id === m.escortId);
+        notify(s, m.id, 'flight', v ? '항공편 지연 안내' : '정시 운항 안내', v ? `출발이 ${v}분 늦어져요.${m.stage <= 4 ? ` 아이는 ${es.name} 직원과 ${f.gate}번 탑승구에서 대기 중이에요.` : ''}` : '항공편이 정시 운항으로 바뀌었어요.');
+        notify(s, m.id, 'flight', '도착 예정 시간 갱신', `${arrTime(f)} 도착 예정이에요.`); }); });
+    toast('지연 정보를 보호자에게 알렸어요.', '', '관리자'); },
+  'a-progress'(p, el){ commit(s => { const f = s.flights[0]; f.progress = +el.value; if (f.progress >= 100) f.phase = 'landed'; else if (['scheduled','boarding','landed'].includes(f.phase) && f.progress > 0) f.phase = f.progress > 90 ? 'descent' : 'cruise'; }); },
+  'a-stage'(p, el){ const u = pUser(p); if (!can(u, 'um.write')) return deny(p); const id = el.dataset.id, v = +el.value;
+    commit(s => { const x = s.ums.find(y => y.id === id); x.stage = v; addEvent(s, id, { stage: Math.min(v, 8), kind:'admin', title:'관리자 조정', detail:`시연용 단계 지정 · ${v >= 9 ? '여정 완료' : STAGES[v].label}`, by:'관리자' }); if (v === 5 && !x.live.location.includes('좌석')) { x.live.location = '좌석에 있어요'; x.live.since = nowISO(); } }); },
+};
+root.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if (!el || el.disabled) return;
+  if (el.classList.contains('is-off') && el.dataset.act !== 'open-collage') return;
+  const fn = A[el.dataset.act]; if (!fn) return; e.preventDefault();
+  fn(paneOf(el) || panes[0], el, e);
+});
+root.addEventListener('change', e => { const el = e.target.closest('[data-act-change]'); if (!el) return; const fn = CH[el.dataset.actChange]; if (fn) fn(paneOf(el) || panes[0], el, e); });
+root.addEventListener('input', e => { if (e.target.matches && e.target.matches('[data-fx="slider"]')) { const p = paneOf(e.target); if (p && p.fp) { p.fp.t = Math.max(0, Math.min(1, +e.target.value / 1000)); p.fp.synced = false; fxUpdate(p); } return; } const el = e.target.closest('[data-bind]'); if (!el) return; const p = paneOf(el); if (!p) return; setPath(p.ui, el.dataset.bind, el.value);
+  if (el.dataset.bind.endsWith('.memo')) { const pv = el.closest('[data-pane]').querySelector('[data-memo-preview]'); if (pv) pv.textContent = el.value ? `“${el.value}”` : ''; } });
+
+/* 콜라주 합성 */
+function loadImg(src){ return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; }); }
+async function composeCollage(cl, f){
+  const W = 1000, H = 1000, pad = 50, top = 130, bodyH = 760;
+  const c = document.createElement('canvas'); c.width = W; c.height = H; const ctx = c.getContext('2d');
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle = '#1f2a5c'; ctx.font = '700 46px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.fillText(cl.title, W/2, 86);
+  const imgs = await Promise.all(cl.sel.map(id => loadImg(S.media.find(x => x.id === id).src)));
+  const cover = (img, x, y, w, h) => { const k = Math.max(w / img.width, h / img.height); const sw = w / k, sh = h / k; ctx.drawImage(img, (img.width - sw) / 2, (img.height - sh) / 2, sw, sh, x, y, w, h); };
+  const bw = W - pad * 2;
+  if (cl.style === 'map') {
+    const pts = MAPSPOTS.slice(0, imgs.length).map(([x, y]) => [pad + x * bw, top + y * bodyH + 30]);
+    ctx.strokeStyle = '#1b7594'; ctx.lineWidth = 5; ctx.setLineDash([14, 12]); ctx.beginPath(); pts.forEach(([x, y], i) => { const cx = x + bw * .09, cy = y + bw * .09; i ? ctx.lineTo(cx, cy) : ctx.moveTo(cx, cy); }); ctx.stroke(); ctx.setLineDash([]);
+    imgs.forEach((img, i) => { const r = bw * .09, [x, y] = pts[i]; ctx.save(); ctx.beginPath(); ctx.arc(x + r, y + r, r, 0, 7); ctx.clip(); cover(img, x, y, r*2, r*2); ctx.restore(); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 8; ctx.beginPath(); ctx.arc(x + r, y + r, r, 0, 7); ctx.stroke(); });
+  } else {
+    const L = layoutFor(Math.min(imgs.length, 6), cl.variant);
+    imgs.slice(0, 6).forEach((img, i) => { const [a, b, w, h] = L[i]; const x = pad + a * bw, y = top + b * bodyH, ww = w * bw, hh = h * bodyH; ctx.save(); ctx.beginPath(); ctx.roundRect(x, y, ww, hh, 16); ctx.clip(); cover(img, x, y, ww, hh); ctx.restore(); });
+  }
+  ctx.fillStyle = '#5a6684'; ctx.font = '500 26px "IBM Plex Mono", monospace'; ctx.fillText(`${new Date().toISOString().slice(0,10)} · ${f.from} → ${f.to}`, W/2, H - 40);
+  return c.toDataURL('image/jpeg', .8);
+}
+
+/* 주기 갱신: AI 제작 완료 처리, 경과 시간 표시 */
+setInterval(() => { tickProducing(false); }, 1000);
+setInterval(() => { const a = document.activeElement; if (a && /INPUT|TEXTAREA|SELECT/.test(a.tagName)) return; renderAll(); }, 30000);
+renderAll();
+})();
+</script>
+
+</body>
+</html>

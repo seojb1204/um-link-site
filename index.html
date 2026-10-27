@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>UM LINK</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="보호자 없이 비행하는 아이의 여정 단계와 인계 기록을 직원·승무원 기록으로 보호자에게 전하는 플랫폼">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: 네이비 상단 히어로(실제 앱 화면 목업) → 흰 본문 섹션들 → 화면 설계 갤러리(탭·확대) → 시연 안내. 탑승권·운항표 같은 항공 문서 문법(코드, 시각, 점선)을 장식이 아닌 정보로 씀 */
+:root{
+  --bg:#ffffff; --bg-2:#f2f5f9; --ink:#14203f; --muted:#56627f; --line:#d7dee8;
+  --navy:#1f2a5c; --navy-2:#2d3a73; --navy-ink:#ffffff; --navy-muted:#b7c0df;
+  --accent:#1b7594; --accent-ink:#ffffff; --accent-soft:#e1eff5;
+  --ok:#2a7a4a; --ok-soft:#e0f2e6; --warn:#985a10; --warn-soft:#fbeedb;
+  --shadow:0 2px 6px rgba(20,32,63,.06),0 18px 40px rgba(20,32,63,.10);
+  --font-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d1325; --bg-2:#131b33; --ink:#e4e9f5; --muted:#99a4c3; --line:#28335a;
+  --navy:#0f1730; --navy-2:#25315e; --navy-ink:#eef1fa; --navy-muted:#9aa6cf;
+  --accent:#4cb0d1; --accent-ink:#06202b; --accent-soft:#14364a;
+  --ok:#6cc893; --ok-soft:#163927; --warn:#e6a95b; --warn-soft:#3b2b14;
+  --shadow:0 2px 6px rgba(0,0,0,.3),0 18px 40px rgba(0,0,0,.35); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1325; --bg-2:#131b33; --ink:#e4e9f5; --muted:#99a4c3; --line:#28335a;
+  --navy:#0f1730; --navy-2:#25315e; --navy-ink:#eef1fa; --navy-muted:#9aa6cf;
+  --accent:#4cb0d1; --accent-ink:#06202b; --accent-soft:#14364a;
+  --ok:#6cc893; --ok-soft:#163927; --warn:#e6a95b; --warn-soft:#3b2b14;
+  --shadow:0 2px 6px rgba(0,0,0,.3),0 18px 40px rgba(0,0,0,.35); color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+img{max-width:100%}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:break-word}
+h1,h2,h3{margin:0;line-height:1.3;text-wrap:balance}
+p{margin:0}
+a{color:inherit}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+.wrap{max-width:1160px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+
+/* 상단 내비 */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--navy)}
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--navy);color:var(--navy-ink);border-bottom:1px solid var(--navy-2)}
+.nav .wrap{display:flex;align-items:center;gap:20px;min-height:60px;padding-block:8px}
+.logo{font-weight:700;letter-spacing:.06em;text-decoration:none;display:flex;align-items:center;gap:8px;flex:none}
+.logo svg{width:20px;height:20px;fill:currentColor;transform:rotate(45deg)}
+.nav-links{display:flex;gap:4px;overflow-x:auto;flex:1;min-width:0;scrollbar-width:none}
+.nav-links a{color:var(--navy-muted);text-decoration:none;font-size:14px;padding:6px 10px;border-radius:8px;white-space:nowrap}
+.nav-links a:hover{color:var(--navy-ink);background:var(--navy-2)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:10px;padding:11px 18px;font-weight:600;font-size:15px;text-decoration:none;border:1px solid transparent;cursor:pointer;white-space:nowrap;min-height:44px}
+.btn-accent{background:var(--accent);color:var(--accent-ink)}
+.btn-accent:hover{filter:brightness(1.07)}
+.btn-ghost{border-color:var(--navy-muted);color:var(--navy-ink);background:transparent}
+.btn-ghost:hover{background:var(--navy-2)}
+.btn-line{border-color:var(--line);color:var(--ink);background:var(--bg)}
+.nav .btn{padding:8px 14px;min-height:38px;font-size:14px}
+@media (max-width:760px){.nav-links{display:none}.nav .wrap{justify-content:space-between}}
+
+/* 히어로 */
+.hero{background:var(--navy);color:var(--navy-ink);overflow:hidden}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:40px;align-items:center;padding-block:64px 0}
+.eyebrow{font-size:13px;font-weight:600;letter-spacing:.08em;color:var(--accent)}
+.hero .eyebrow{color:var(--navy-muted)}
+.hero h1{font-size:clamp(32px,4.6vw,52px);font-weight:700;letter-spacing:-.01em;margin-top:14px}
+.hero h1 em{font-style:normal;color:#7fd0ec}
+.hero .lead{color:var(--navy-muted);font-size:18px;margin-top:18px;max-width:34em}
+.hero .cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
+.pass{margin-top:36px;display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;border-top:1.5px dashed var(--navy-2);padding-block:18px 56px;max-width:480px}
+.pass .code{font-family:var(--font-mono);font-size:30px;font-weight:600;line-height:1}
+.pass .city{font-size:12px;color:var(--navy-muted)}
+.pass .mid{display:grid;justify-items:center;gap:4px;font-size:12px;color:var(--navy-muted)}
+.pass .line{width:100%;border-top:1.5px dashed var(--navy-muted);position:relative;height:0}
+.pass .line svg{position:absolute;left:50%;top:-9px;width:18px;height:18px;fill:var(--navy-ink);transform:translateX(-50%) rotate(90deg)}
+.devices{position:relative;height:520px;align-self:end}
+.dw{position:absolute}
+.dw.tablet{width:86%;right:0;top:40px}
+.dw.phone{width:34%;left:0;top:130px;z-index:2}
+.dev{border-radius:18px;overflow:hidden;background:#fff;box-shadow:0 30px 60px rgba(0,0,0,.35);border:6px solid #0b1124}
+.dw.phone .dev{border-width:7px;border-radius:30px}
+.dev img{display:block;width:100%;height:auto}
+.dev-tag{position:absolute;top:-30px;font-size:12px;font-weight:600;background:var(--accent);color:var(--accent-ink);padding:4px 10px;border-radius:99px;white-space:nowrap}
+.dw.tablet .dev-tag{right:0}
+.dw.phone .dev-tag{left:0}
+@media (max-width:900px){.hero .wrap{grid-template-columns:1fr;padding-block:44px 0}.devices{height:380px}.dw.phone{top:110px}.pass{padding-bottom:20px}}
+@media (max-width:480px){.devices{height:270px}.dw.phone{top:80px}}
+
+/* 섹션 */
+section{padding-block:84px}
+section.alt{background:var(--bg-2)}
+.sec-head{display:grid;gap:12px;max-width:44em;margin-bottom:40px}
+.sec-head h2{font-size:clamp(26px,3.2vw,36px);font-weight:700}
+.sec-head p{color:var(--muted);font-size:17px}
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+@media (max-width:860px){.grid-3,.grid-2{grid-template-columns:1fr}}
+.card{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:24px;min-width:0}
+section.alt .card{background:var(--bg)}
+.card h3{font-size:19px;margin-bottom:8px}
+.card p{color:var(--muted);font-size:15px}
+.ul{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:8px;font-size:15px}
+.ul li{display:flex;gap:10px}
+.ul li::before{content:"";flex:none;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-top:10px}
+.role{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.role .ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-weight:700;color:#fff;flex:none}
+.role small{display:block;color:var(--muted);font-size:13px}
+
+/* 원칙 콜아웃 */
+.principle{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.principle > div{padding:28px;display:grid;gap:10px;align-content:start}
+.principle > div + div{border-left:1px dashed var(--line)}
+.principle .k{font-family:var(--font-mono);font-size:13px;color:var(--muted);letter-spacing:.04em}
+.principle h3{font-size:21px}
+.principle p{color:var(--muted)}
+.principle .src{display:inline-flex;gap:6px;align-items:center;font-size:13px;font-weight:600;padding:4px 10px;border-radius:99px;justify-self:start}
+.src.a{background:var(--accent-soft);color:var(--accent)} .src.b{background:var(--ok-soft);color:var(--ok)}
+@media (max-width:760px){.principle{grid-template-columns:1fr}.principle > div + div{border-left:0;border-top:1px dashed var(--line)}}
+
+/* 여정 */
+.journey{overflow-x:auto;padding-bottom:6px}
+.journey ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(9,minmax(112px,1fr));min-width:1000px;position:relative}
+.journey ol::before{content:"";position:absolute;left:20px;right:20px;top:19px;border-top:2px dashed var(--line)}
+.journey li{position:relative;padding-right:10px}
+.journey .dot{width:40px;height:40px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);display:grid;place-items:center;font-family:var(--font-mono);font-weight:600;font-size:13px;color:var(--accent);position:relative}
+.journey li.ho .dot{background:var(--accent);color:var(--accent-ink)}
+.journey b{display:block;margin-top:12px;font-size:15px}
+.journey span{display:block;font-size:13px;color:var(--muted)}
+.journey .who{font-family:var(--font-mono);font-size:11px;color:var(--accent);margin-top:4px}
+/* 좁은 화면에서는 가로 스크롤 대신 세로로 쌓습니다.
+   9단계를 옆으로 밀어서 봐야 하면 지나치기 쉬워서, 한 번에 다 보이게 합니다. */
+@media (max-width:760px){
+  .journey{overflow-x:visible;padding-bottom:0}
+  .journey ol{grid-template-columns:minmax(0,1fr);min-width:0}
+  .journey ol::before{display:none}
+  .journey li{display:grid;grid-template-columns:40px minmax(0,1fr);column-gap:14px;
+              padding:0 0 20px 0}
+  .journey li::before{content:"";position:absolute;left:19px;top:44px;bottom:0;
+                      border-left:2px dashed var(--line)}
+  .journey li:last-child::before{display:none}
+  .journey li:last-child{padding-bottom:0}
+  .journey .dot{grid-column:1;grid-row:1 / span 3;flex:none}
+  .journey li > b{grid-column:2;grid-row:1;margin-top:9px;font-size:16px}
+  .journey li > span:not(.dot):not(.who){grid-column:2;grid-row:2;margin-top:2px}
+  .journey li > .who{grid-column:2;grid-row:3}
+}
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:18px;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:50%;border:2px solid var(--accent);vertical-align:-1px;margin-right:6px}
+.legend i.f{background:var(--accent)}
+
+/* 화면 설계 */
+.tabs{display:inline-flex;gap:4px;background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:28px;flex-wrap:wrap}
+.tabs button{border:0;background:transparent;padding:9px 16px;border-radius:9px;font:inherit;font-size:15px;color:var(--muted);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--navy);color:var(--navy-ink);font-weight:600}
+.gallery{display:grid;gap:24px}
+.gallery.g{grid-template-columns:repeat(4,minmax(0,1fr))}
+.gallery.c{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:980px){.gallery.g{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:700px){.gallery.c{grid-template-columns:1fr}}
+@media (max-width:420px){.gallery.g{grid-template-columns:1fr 1fr;gap:14px}}
+.shot{display:grid;gap:12px;align-content:start;min-width:0}
+.shot button{padding:0;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--bg-2);cursor:zoom-in;display:block;width:100%;box-shadow:var(--shadow);transition:transform .2s}
+.shot button:hover{transform:translateY(-3px)}
+.shot img{display:block;width:100%;height:auto}
+.shot .no{font-family:var(--font-mono);font-size:12px;color:var(--accent);font-weight:600}
+.shot h3{font-size:16px}
+.shot p{font-size:14px;color:var(--muted)}
+
+/* 기능 */
+.feat{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--line)}
+.feat > div{padding:22px 20px 22px 0;border-bottom:1px solid var(--line);display:grid;gap:6px;align-content:start}
+.feat .n{font-family:var(--font-mono);font-size:12px;color:var(--muted)}
+.feat b{font-size:16px}
+.feat p{font-size:14px;color:var(--muted)}
+@media (max-width:860px){.feat{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.feat{grid-template-columns:1fr}}
+
+/* 가격 */
+.plans{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:18px}
+@media (max-width:860px){.plans{grid-template-columns:1fr}}
+.free{background:var(--navy);color:var(--navy-ink);border-radius:18px;padding:28px;display:grid;gap:14px;align-content:start}
+.free .price{font-family:var(--font-mono);font-size:34px;font-weight:600}
+.free p,.free li{color:var(--navy-muted)}
+.free .ul li::before{background:#7fd0ec}
+.prods{display:grid;gap:12px}
+.prod{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 16px;align-items:start;border:1px solid var(--line);border-radius:14px;padding:18px 20px;background:var(--bg)}
+.prod b{font-size:17px}
+.prod .p{font-family:var(--font-mono);font-size:20px;font-weight:600}
+.prod p{grid-column:1/-1;font-size:14px;color:var(--muted)}
+.chips{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:12px;font-weight:600;padding:3px 10px;border-radius:99px;background:var(--warn-soft);color:var(--warn)}
+.flow{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;align-items:center;font-size:14px}
+.flow span{padding:6px 12px;border-radius:8px;background:var(--bg);border:1px solid var(--line)}
+.flow i{color:var(--muted);font-style:normal}
+.rules{margin-top:18px;display:grid;gap:10px}
+.rule{display:flex;gap:10px;font-size:15px;align-items:flex-start}
+.rule .x{flex:none;width:22px;height:22px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:12px;font-weight:700;margin-top:2px}
+
+/* 데이터 */
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:14px}
+th,td{text-align:left;padding:12px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--bg-2);color:var(--muted);font-weight:600;font-size:13px}
+tr:last-child td{border-bottom:0}
+td:first-child{font-family:var(--font-mono);font-weight:600;color:var(--accent);white-space:nowrap}
+.y{color:var(--ok);font-weight:600}
+
+/* 단계 */
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;counter-reset:s}
+@media (max-width:860px){.steps{grid-template-columns:1fr 1fr}}
+@media (max-width:460px){.steps{grid-template-columns:1fr}}
+.steps li{border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--bg);display:grid;gap:6px;counter-increment:s}
+.steps li::before{content:"STEP " counter(s);font-family:var(--font-mono);font-size:12px;color:var(--muted)}
+.steps .done{font-size:12px;font-weight:600;color:var(--ok)}
+
+/* 시연 */
+.demo{background:var(--navy);color:var(--navy-ink);border-radius:22px;padding:40px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:36px;align-items:start}
+.demo h2{font-size:clamp(24px,3vw,32px)}
+.demo p{color:var(--navy-muted)}
+.demo .cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.scn{list-style:none;margin:0;padding:0;display:grid;gap:0;counter-reset:c}
+.scn li{display:grid;grid-template-columns:34px 1fr;gap:12px;padding:14px 0;border-bottom:1px dashed var(--navy-2);counter-increment:c}
+.scn li:last-child{border-bottom:0}
+.scn li::before{content:counter(c);width:30px;height:30px;border-radius:50%;background:var(--navy-2);display:grid;place-items:center;font-family:var(--font-mono);font-weight:600;font-size:13px}
+.scn b{display:block}
+.scn span{font-size:14px;color:var(--navy-muted)}
+.acct{margin-top:22px;display:grid;gap:6px;font-size:14px;color:var(--navy-muted)}
+.acct code{font-family:var(--font-mono);color:var(--navy-ink);background:var(--navy-2);padding:1px 6px;border-radius:5px}
+@media (max-width:860px){.demo{grid-template-columns:1fr;padding:28px 22px}}
+
+footer{padding-block:40px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:12px 24px;justify-content:space-between}
+
+/* 확대 보기 */
+.lb{position:fixed;inset:0;z-index:20;background:rgba(8,12,26,.88);display:grid;grid-template-rows:auto 1fr;padding:calc(12px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.lb-top{display:flex;align-items:center;gap:10px;color:#fff;padding-bottom:10px}
+.lb-top b{flex:1;font-size:15px;min-width:0}
+.lb-top button{border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;border-radius:10px;min-width:40px;height:40px;font-size:18px;cursor:pointer}
+.lb-img{min-height:0;display:grid;place-items:center}
+.lb-img img{max-width:100%;max-height:100%;object-fit:contain;border-radius:12px;background:#fff}
+</style>
+</head>
+<body>
+
+
+<header class="nav">
+  <div class="wrap">
+    <a class="logo" href="#top"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 3.5c0-.8.7-1.5 1.5-1.5s1.5.7 1.5 1.5V9l8 4.5V16l-8-2.5V19l2.5 2v1.5L12 21.5l-4 1V21l2.5-2v-5.5L2.5 16v-2.5l8-4.5z"/></svg>UM LINK</a>
+    <nav class="nav-links" aria-label="섹션">
+      <a href="#service">서비스</a><a href="#journey">여정·인계</a><a href="#screens">화면 설계</a><a href="#features">핵심 기능</a><a href="#pricing">무료·유료</a><a href="#data">데이터·보안</a><a href="#film">여정 영상</a><a href="#demo">시연</a>
+    </nav>
+    <a class="btn btn-accent" href="app.html">작동형 앱 열기</a>
+  </div>
+</header>
+
+<main id="top">
+<div class="hero">
+  <div class="wrap">
+    <div>
+      <div class="eyebrow">비동반 소아(UM) 여정 관리 플랫폼 · 캡스톤 디자인 출품작</div>
+      <h1>혼자 비행하는 아이,<br>보호자는 <em>기록</em>으로 곁에 있어요</h1>
+      <p class="lead">UM LINK는 보호자 없이 항공편을 이용하는 아이의 여정 단계와 인계 기록을 관리하고, 담당 직원·승무원이 직접 확인한 상태를 보호자에게 전해요.</p>
+      <div class="cta"><a class="btn btn-accent" href="app.html">작동형 앱 시연하기</a><a class="btn btn-ghost" href="#screens">화면 설계 보기</a></div>
+      <div class="pass" aria-label="예시 항공편">
+        <div><div class="code">ICN</div><div class="city">인천 · 체크인 첫 인계</div></div>
+        <div class="mid"><span class="mono">UM · 9 STAGES</span><div class="line"><svg viewBox="0 0 24 24"><path d="M10.5 3.5c0-.8.7-1.5 1.5-1.5s1.5.7 1.5 1.5V9l8 4.5V16l-8-2.5V19l2.5 2v1.5L12 21.5l-4 1V21l2.5-2v-5.5L2.5 16v-2.5l8-4.5z"/></svg></div><span>인계 4회 기록</span></div>
+        <div style="text-align:right"><div class="code">LAX</div><div class="city">도착 · 최종 인계</div></div>
+      </div>
+    </div>
+    <div class="devices" aria-hidden="true">
+      <div class="dw tablet"><span class="dev-tag">객실승무원 태블릿</span><div class="dev"><img src="screens/crew-1.jpg" alt=""></div></div>
+      <div class="dw phone"><span class="dev-tag">보호자 모바일</span><div class="dev"><img src="screens/guardian-3.jpg" alt=""></div></div>
+    </div>
+  </div>
+</div>
+
+<section id="service">
+  <div class="wrap">
+    <div class="sec-head"><div class="eyebrow">서비스 목표</div><h2>보호자가 알고 싶은 건 "아이가 지금 누구와, 어떤 상태인지"예요</h2>
+      <p>아이는 체크인부터 도착까지 여러 직원과 승무원의 손을 거쳐요. UM LINK는 그 사이의 모든 인계를 기록하고, 확인된 상태만 보호자에게 보여 줘요.</p></div>
+    <div class="principle">
+      <div><span class="k">AIRCRAFT POSITION</span><h3>항공기 위치</h3><p>운항 정보로 보여 주는 비행기의 위치·고도·속도예요. 지도에 표시되는 건 항공기예요.</p><span class="src a">운항 데이터 기준</span></div>
+      <div><span class="k">CHILD STATUS</span><h3>아이의 위치와 상태</h3><p>GPS나 센서로 추적하지 않아요. "탑승 완료", "좌석에 있어요"처럼 직원·승무원이 기록한 상태로 알려요.</p><span class="src b">직원·승무원 기록 기준</span></div>
+    </div>
+
+    <div class="grid-3" style="margin-top:40px">
+      <div class="card"><div class="role"><span class="ic" style="background:var(--accent)">보</span><div><h3 style="margin:0">보호자</h3><small>모바일 앱</small></div></div>
+        <ul class="ul"><li>아이 여정·타임라인 확인</li><li>상태 리포트와 알림 확인</li><li>인계 기록 확인</li><li>개인정보·선택 동의 관리</li><li>사진·영상 상품 구매</li><li>AI 콘텐츠 확인·저장</li></ul></div>
+      <div class="card"><div class="role"><span class="ic" style="background:var(--navy-2)">승</span><div><h3 style="margin:0">객실승무원</h3><small>기내 태블릿 앱</small></div></div>
+        <ul class="ul"><li>담당 UM 목록 확인</li><li>식사·수면·기분·위치 상태 기록</li><li>도착 인계 기록 작성</li><li>촬영·AI 처리 동의 확인</li><li>허용된 사진·영상 업로드</li><li>기내 Wi-Fi·전송 대기 확인</li></ul></div>
+      <div class="card"><div class="role"><span class="ic" style="background:var(--warn)">관</span><div><h3 style="margin:0">관리자</h3><small>운영 콘솔</small></div></div>
+        <ul class="ul"><li>가상 항공편·아동 데이터 관리</li><li>사용자 권한과 시연 상태 관리</li><li>콘텐츠 상품·테스트 구매 확인</li><li>개인정보 삭제 요청 처리</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section id="journey" class="alt">
+  <div class="wrap">
+    <div class="sec-head"><div class="eyebrow">여정 · 인계</div><h2>9단계 여정, 손이 바뀔 때마다 인계자·인수자·시각을 남겨요</h2>
+      <p>보호자 앱의 여정 타임라인은 아래 단계를 그대로 따라가요. 각 단계는 기록한 사람과 시각이 함께 표시돼요.</p></div>
+    <div class="journey">
+      <ol>
+        <li><span class="dot">01</span><b>신청 · 여정 등록</b><span>보호자 신청, 서류 확인</span><span class="who">UM 데스크</span></li>
+        <li class="ho"><span class="dot">02</span><b>체크인 · 첫 인계</b><span>보호자 → 공항 직원</span><span class="who">HANDOFF</span></li>
+        <li><span class="dot">03</span><b>보안검색 · 이동</b><span>직원과 함께 출국장 이동</span><span class="who">공항 직원</span></li>
+        <li class="ho"><span class="dot">04</span><b>디지털 인계</b><span>직원 → 탑승 지원 직원</span><span class="who">HANDOFF · QR</span></li>
+        <li class="ho"><span class="dot">05</span><b>탑승 완료</b><span>탑승구 직원 → 승무원</span><span class="who">HANDOFF</span></li>
+        <li><span class="dot">06</span><b>기내 상태 리포트</b><span>식사·수면·기분·위치</span><span class="who">객실승무원</span></li>
+        <li><span class="dot">07</span><b>착륙 확인</b><span>보호자에게 착륙 알림</span><span class="who">객실승무원</span></li>
+        <li class="ho"><span class="dot">08</span><b>지상직원 인계</b><span>승무원 → 지상직원</span><span class="who">HANDOFF · QR/사번</span></li>
+        <li class="ho"><span class="dot">09</span><b>최종 인계</b><span>마중 나온 사람 인증</span><span class="who">HANDOFF · 인증 코드</span></li>
+      </ol>
+    </div>
+    <div class="legend"><span><i class="f"></i>인계 기록이 남는 단계</span><span><i></i>상태 기록 단계</span></div>
+  </div>
+</section>
+
+<section id="screens">
+  <div class="wrap">
+    <div class="sec-head"><div class="eyebrow">화면 설계</div><h2>보호자 앱 8화면, 객실승무원 앱 4화면</h2>
+      <p>공모전 제출용으로 설계한 실제 화면이에요. 이미지를 누르면 크게 볼 수 있고, 같은 흐름을 작동형 앱에서 직접 눌러 볼 수 있어요.</p></div>
+    <div class="tabs" role="tablist" aria-label="앱 선택">
+      <button role="tab" id="tab-g" aria-controls="panel-g" aria-selected="true" data-tab="g">보호자 앱 · 8</button>
+      <button role="tab" id="tab-c" aria-controls="panel-c" aria-selected="false" data-tab="c">객실승무원 앱 · 4</button>
+    </div>
+    <div id="panel-g" role="tabpanel" aria-labelledby="tab-g" class="gallery g"></div>
+    <div id="panel-c" role="tabpanel" aria-labelledby="tab-c" class="gallery c" hidden></div>
+    <div style="margin-top:32px;display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn-accent" href="app.html">이 화면들을 작동형 앱으로 열기</a></div>
+  </div>
+</section>
+
+<section id="features" class="alt">
+  <div class="wrap">
+    <div class="sec-head"><div class="eyebrow">핵심 기능</div><h2>한쪽에서 기록하면 다른 쪽 화면이 바로 바뀌어요</h2>
+      <p>보호자 앱과 승무원 앱은 같은 데이터를 봐요. 상태 입력, 인계, 동의 변경이 서로의 화면에 즉시 반영돼요.</p></div>
+    <div class="feat">
+      <div><span class="n">01</span><b>사용자 유형별 로그인</b><p>보호자·승무원·관리자 권한에 따라 화면과 데이터가 나뉘어요.</p></div>
+      <div><span class="n">02</span><b>여정 타임라인</b><p>9단계 진행 상황과 마지막 상태 확인 시각을 보여 줘요.</p></div>
+      <div><span class="n">03</span><b>인계 기록</b><p>인계자·인수자·시각·장소·확인 방식(QR·사번)을 남겨요.</p></div>
+      <div><span class="n">04</span><b>상태 리포트와 알림</b><p>승무원이 입력하면 보호자 알림 목록이 갱신돼요.</p></div>
+      <div><span class="n">05</span><b>오프라인 전송 대기</b><p>기내 Wi-Fi가 끊기면 저장했다가 연결되면 자동으로 보내요.</p></div>
+      <div><span class="n">06</span><b>동의 기반 촬영</b><p>촬영 동의가 없는 아이는 승무원 앱의 촬영 버튼이 꺼져요.</p></div>
+      <div><span class="n">07</span><b>AI 콜라주 · 기념 영상</b><p>AI 처리 동의와 구매가 모두 확인돼야 제작·열람할 수 있어요.</p></div>
+      <div><span class="n">08</span><b>테스트 결제·주문 상태</b><p>결제 대기 → 승인 → 제작 → 완료 흐름을 실제 청구 없이 보여 줘요.</p></div>
+      <div><span class="n">09</span><b>삭제 요청</b><p>콘텐츠는 즉시 삭제, 개인정보는 요청 후 운영자가 처리해요.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="wrap">
+    <div class="sec-head"><div class="eyebrow">무료 · 유료</div><h2>안전관리는 무료, 추억 콘텐츠만 따로 신청해요</h2>
+      <p>아이의 안전과 관련된 기능은 비용과 상관없이 모두 제공해요. 사진·영상과 AI 콘텐츠만 보호자가 원할 때 신청하는 부가서비스예요.</p></div>
+    <div class="plans">
+      <div class="free"><div class="eyebrow" style="color:var(--navy-muted)">기본 서비스</div><div class="price">₩0</div><b style="font-size:18px">UM 안전관리</b>
+        <ul class="ul"><li>여정 타임라인과 인계 기록</li><li>승무원 상태 리포트</li><li>단계 완료·항공편 변경 알림</li><li>동의 관리와 개인정보 삭제</li></ul></div>
+      <div>
+        <div class="prods">
+          <div class="prod"><b>여정 사진 패키지</b><span class="p">₩9,900</span><p>직원·승무원이 촬영한 사진·영상 원본 보기와 기기 저장. 구매 전에는 미리보기만 보여요.</p><div class="chips"><span class="chip">촬영·보관 동의 필요</span></div></div>
+          <div class="prod"><b>AI 기념 콜라주</b><span class="p">₩4,900</span><p>고른 사진으로 기념 사진형·여정 지도형 콜라주 제작, 문구 수정 후 아카이브 저장.</p><div class="chips"><span class="chip">촬영·보관 동의 필요</span><span class="chip">AI 처리 동의 필요</span></div></div>
+          <div class="prod"><b>AI 기념 영상</b><span class="p">₩12,900</span><p>여정 사진을 이어 붙인 30초 기념 영상 1편 제작.</p><div class="chips"><span class="chip">촬영·보관 동의 필요</span><span class="chip">AI 처리 동의 필요</span></div></div>
+        </div>
+        <div class="flow" aria-label="구매 흐름"><span>상품 선택</span><i>→</i><span>가격 확인</span><i>→</i><span>동의 확인</span><i>→</i><span>테스트 결제</span><i>→</i><span>콘텐츠 제작</span><i>→</i><span>결과 확인·저장</span></div>
+        <div class="rules">
+          <div class="rule"><span class="x">1</span><span>시제품에서는 실제 결제 없이 <b>테스트 결제</b> 상태만 써요. "결제 완료"로 오해할 수 있는 표현은 쓰지 않아요.</span></div>
+          <div class="rule"><span class="x">2</span><span>촬영 동의, AI 처리 동의, 구매 상태는 <b>각각 따로</b> 관리해요. 구매했다고 동의가 자동으로 켜지지 않아요.</span></div>
+          <div class="rule"><span class="x">3</span><span>동의를 철회하면 진행 중인 주문은 <b>동의 대기</b>로 바뀌고, 콘텐츠 열람도 멈춰요.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="data" class="alt">
+  <div class="wrap">
+    <div class="sec-head"><div class="eyebrow">데이터 · 보안</div><h2>10개 데이터 항목, 모두 가상 데이터로 구성했어요</h2>
+      <p>실제 아동의 개인정보는 쓰지 않았어요. 시연용 아이 이름과 항공편, 사진은 모두 가상으로 만든 것이에요.</p></div>
+    <div class="tbl"><table>
+      <thead><tr><th>항목</th><th>담는 내용</th><th>주로 쓰는 쪽</th></tr></thead>
+      <tbody>
+        <tr><td>Users</td><td>사용자 유형, 인증 정보, 권한</td><td>전체</td></tr>
+        <tr><td>Flights</td><td>항공편 번호, 출발지·도착지, 출발·도착 예정 시각, 운항 단계</td><td>관리자 → 보호자·승무원</td></tr>
+        <tr><td>UMProfiles</td><td>시제품용 아동 식별자, 좌석, 여정·담당 승무원 연결</td><td>전체 (역할별 범위 제한)</td></tr>
+        <tr><td>JourneyEvents</td><td>여정 단계, 상태, 기록자, 기록 시각</td><td>승무원·직원 → 보호자</td></tr>
+        <tr><td>Handoffs</td><td>인계자, 인수자, 인계 시각, 장소, 확인 상태</td><td>승무원·직원 → 보호자</td></tr>
+        <tr><td>ConsentRecords</td><td>촬영 동의, AI 처리 동의, 동의 시각, 철회 상태, 변경 이력</td><td>보호자 → 승무원(여부만)</td></tr>
+        <tr><td>MediaAssets</td><td>콘텐츠 종류, 처리·전송 상태, 접근 권한, 보관 상태</td><td>승무원 → 보호자</td></tr>
+        <tr><td>Products</td><td>상품명, 가격, 제공 범위, 필요한 동의</td><td>보호자·관리자</td></tr>
+        <tr><td>Orders</td><td>구매 상품, 테스트 결제 상태, 주문 상태, 처리 이력</td><td>보호자·관리자</td></tr>
+        <tr><td>Notifications</td><td>알림 유형, 생성 시각, 확인 상태</td><td>보호자</td></tr>
+      </tbody></table></div>
+
+    <div class="grid-2" style="margin-top:28px">
+      <div class="card"><h3>역할별 접근 권한</h3>
+        <ul class="ul"><li>보호자: 본인 아이의 여정·콘텐츠만 열람, 동의 변경·주문·삭제 요청</li><li>객실승무원: 담당 UM만 기록, 동의는 "됐는지 여부"만 확인, 보호자 연락처 열람 불가</li><li>관리자: 운항·여정·주문 관리, 보호자 전용 사진·영상 원본은 열람하지 않음</li></ul></div>
+      <div class="card"><h3>실제 배포 전 검토 항목</h3>
+        <ul class="ul"><li>보호자 본인인증, 승무원·지상직원 사내 SSO와 기기 등록</li><li>서버 측 역할 기반 접근 제어와 아동 단위 접근 검증</li><li>만 14세 미만 법정대리인 동의 증빙, 보유 기간 자동 파기</li><li>사진·영상 비공개 저장소, 만료되는 서명 URL, 위치정보(EXIF) 제거</li><li>외부 AI 처리 시 국외 이전·위탁 고지</li><li>PG 테스트 키에서 운영 키 전환, 환불 정책</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section id="build">
+  <div class="wrap">
+    <div class="sec-head"><div class="eyebrow">구현 순서</div><h2>8단계로 만들고, 단계마다 작동을 확인했어요</h2></div>
+    <ol class="steps">
+      <li><b>화면·이동 경로 구성</b><span class="done">완료</span></li>
+      <li><b>가상 데이터로 보호자·승무원 화면</b><span class="done">완료</span></li>
+      <li><b>공통 데이터 저장소 연결</b><span class="done">완료 · 브라우저 저장소</span></li>
+      <li><b>상태 입력과 알림 연동</b><span class="done">완료</span></li>
+      <li><b>인계 기록 기능</b><span class="done">완료</span></li>
+      <li><b>동의 관리·유료 상품 구매 흐름</b><span class="done">완료 · 테스트 결제</span></li>
+      <li><b>콘텐츠 업로드·미리보기</b><span class="done">완료</span></li>
+      <li><b>주요 시연 시나리오 테스트</b><span class="done">통과</span></li>
+    </ol>
+  </div>
+</section>
+
+<section id="film" class="alt">
+  <div class="wrap">
+    <div class="sec-head"><div class="eyebrow">여정 영상 · Flight Journey</div><h2>인천에서 출발한 항공기 1대가 태평양을 건너 로스앤젤레스에 도착해요</h2>
+      <p>보호자 앱 비행 여정 화면의 "여정 영상"과 같은 18초 모션 그래픽이에요. 발표 화면에서 바로 재생하거나, 전체화면으로 크게 보여 줄 수 있어요.</p></div>
+    <div id="film-player"></div>
+    <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn-line" href="flight-journey.html">영상 페이지 따로 열기</a></div>
+  </div>
+</section>
+
+<section id="demo">
+  <div class="wrap">
+    <div class="demo">
+      <div>
+        <div class="eyebrow" style="color:var(--navy-muted)">직접 시연하기</div>
+        <h2 style="margin-top:10px">승무원과 보호자 화면을 나란히 열어 두고 눌러 보세요</h2>
+        <p style="margin-top:12px">데스크톱에서는 두 앱이 한 화면에 나란히 열려요. 휴대폰에서는 '계정 전환'으로 역할을 바꾸거나, 같은 링크를 두 탭에서 열면 서로 동기화돼요.</p>
+        <div class="cta"><a class="btn btn-accent" href="app.html">작동형 앱 열기</a></div>
+        <div class="acct"><span>시연 계정 · 로그인 버튼만 누르면 돼요</span><span><code>guardian01</code> 보호자 · 하린(가상, 만 9세)</span><span><code>guardian02</code> 보호자 · 도윤(가상, 첫 동의 절차)</span><span><code>crew01</code> 객실승무원 · KE 017 담당</span><span><code>admin</code> 관리자 콘솔</span></div>
+      </div>
+      <ol class="scn">
+        <li><div><b>탑승 완료 입력</b><span>승무원 앱 담당 UM에서 '탑승 완료 기록' → 보호자 타임라인과 알림이 갱신돼요.</span></div></li>
+        <li><div><b>기내 상태 리포트</b><span>상태 체크에서 식사·위치를 골라 전송. Wi-Fi를 끄고 보내면 전송 대기에 쌓여요.</span></div></li>
+        <li><div><b>동의한 아이만 촬영</b><span>촬영·업로드에서 하린은 촬영 가능, 도윤은 버튼이 꺼져 있어요.</span></div></li>
+        <li><div><b>상품 테스트 구매</b><span>보호자 아카이브 → AI 콜라주 만들기 → 테스트 결제 승인 → 주문 상태 변경.</span></div></li>
+        <li><div><b>콘텐츠 제작·저장</b><span>사진을 골라 콜라주를 만들고 아카이브에 저장. 동의를 끄면 바로 숨겨져요.</span></div></li>
+        <li><div><b>도착 인계</b><span>착륙 확인 → 지상직원 QR → 체크리스트 → 인계 완료. 최종 인계는 관리자 화면에서 처리해요.</span></div></li>
+      </ol>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span><b style="color:var(--ink)">UM LINK</b> · 대학생 창업 · 캡스톤 디자인 공모전 출품작</span>
+    <span>모든 아동·승무원·항공편 정보는 시연용 가상 데이터예요. 실제 결제·운항 정보·본인인증은 연동되지 않았어요.</span>
+  </div>
+</footer>
+<script src="flight-journey.js"></script>
+<script>if (window.UMFlightJourney) UMFlightJourney.mount(document.getElementById("film-player"), { autoplay: "visible" });</script>
+
+<div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-labelledby="lb-title">
+  <div class="lb-top"><button id="lb-prev" aria-label="이전 화면">‹</button><b id="lb-title"></b><button id="lb-next" aria-label="다음 화면">›</button><button id="lb-close" aria-label="닫기">✕</button></div>
+  <div class="lb-img"><img id="lb-img" alt=""></div>
+</div>
+
+<script>
+(() => {
+  const G = [
+    ['guardian-1','가입 · 필수 동의','법정대리인 본인인증과 필수 동의 3가지. 수집 항목·이용 목적·보유 기간을 먼저 보여 줘요.'],
+    ['guardian-8','가입 · 선택 동의 3/3','사진·영상 촬영과 AI 처리는 따로 묻고, 보관 기간을 고르게 해요.'],
+    ['guardian-3','홈 · 여정 타임라인','지금 단계, 담당 직원, 도착 예정 시각과 단계별 완료 기록.'],
+    ['guardian-2','비행 여정','항공기 위치·고도·속도와, 승무원이 알려 준 아이 상태를 나눠서 보여 줘요.'],
+    ['guardian-4','실시간 현황','좌석·화장실·승무원과 함께 등 기록 기반 위치와 식사·서비스 현황.'],
+    ['guardian-5','알림','인계·상태·항공편 변경 알림을 분류해서 보고, 알림 받기를 설정해요.'],
+    ['guardian-6','아카이브','동의 후 직원·승무원이 올린 사진·영상을 여정 구간별로 모아요.'],
+    ['guardian-7','AI 콜라주','사진을 고르고 스타일을 정해 미리본 뒤, 문구를 고쳐 저장해요.'],
+  ];
+  const C = [
+    ['crew-1','담당 UM','담당 아이 목록, 촬영 동의 여부, 마지막 상태와 지금 할 일.'],
+    ['crew-2','상태 체크','식사·수면·기분·서비스·위치를 골라 보내기 전에 보호자 화면 미리보기를 확인해요.'],
+    ['crew-3','촬영 · 업로드','동의한 아이만 촬영 버튼이 켜져요. 전송 대기열과 한마디를 함께 올려요.'],
+    ['crew-4','도착 인계','착륙 확인 → 지상직원 QR·사번 인계 → 최종 인수자 확인 3단계.'],
+  ];
+  const render = (el, list, tag) => { el.innerHTML = list.map(([f, t, d], i) => `<figure class="shot" style="margin:0"><button data-set="${tag}" data-i="${i}" aria-label="${t} 크게 보기"><img src="screens/${f}.jpg" alt="${t} 화면" loading="lazy" width="${tag === 'g' ? 692 : 1174}" height="${tag === 'g' ? 1495 : 880}"></button><figcaption><span class="no">${tag === 'g' ? 'G' : 'C'}-${String(i + 1).padStart(2, '0')}</span><h3>${t}</h3><p>${d}</p></figcaption></figure>`).join(''); };
+  const pg = document.getElementById('panel-g'), pc = document.getElementById('panel-c');
+  render(pg, G, 'g'); render(pc, C, 'c');
+  document.querySelectorAll('[role="tab"]').forEach(b => b.addEventListener('click', () => {
+    const g = b.dataset.tab === 'g';
+    document.getElementById('tab-g').setAttribute('aria-selected', g); document.getElementById('tab-c').setAttribute('aria-selected', !g);
+    pg.hidden = !g; pc.hidden = g;
+  }));
+  const lb = document.getElementById('lb'), img = document.getElementById('lb-img'), ttl = document.getElementById('lb-title');
+  let set = G, idx = 0, last = null;
+  const show = () => { const [f, t] = set[idx]; img.src = `screens/${f}.jpg`; img.alt = t; ttl.textContent = `${set === G ? '보호자 앱' : '객실승무원 앱'} · ${t} (${idx + 1}/${set.length})`; };
+  const open = (s, i, btn) => { set = s === 'g' ? G : C; idx = i; last = btn; show(); lb.hidden = false; document.body.style.overflow = 'hidden'; document.getElementById('lb-close').focus(); };
+  const close = () => { lb.hidden = true; document.body.style.overflow = ''; if (last) last.focus(); };
+  document.addEventListener('click', e => { const b = e.target.closest('[data-set]'); if (b) open(b.dataset.set, +b.dataset.i, b); });
+  document.getElementById('lb-close').onclick = close;
+  document.getElementById('lb-prev').onclick = () => { idx = (idx - 1 + set.length) % set.length; show(); };
+  document.getElementById('lb-next').onclick = () => { idx = (idx + 1) % set.length; show(); };
+  lb.addEventListener('click', e => { if (e.target === lb || e.target.classList.contains('lb-img')) close(); });
+  document.addEventListener('keydown', e => { if (lb.hidden) return; if (e.key === 'Escape') close(); if (e.key === 'ArrowRight') document.getElementById('lb-next').click(); if (e.key === 'ArrowLeft') document.getElementById('lb-prev').click(); });
+})();
+</script>
+
+</body>
+</html>
