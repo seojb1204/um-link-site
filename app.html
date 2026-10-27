@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>UM LINK 시연 앱</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<!-- 앱 설치(PWA) — 홈 화면에 추가하면 주소창 없이 전체화면으로 열려요 -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1f2a5c">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="UM LINK">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
@@ -482,6 +491,9 @@ tr:last-child td{border-bottom:0}
 <script src="src/db/supabase-adapter.js"></script>
 <script src="src/db/mirror.js"></script>
 <script src="src/db/index.js"></script>
+
+<!-- 앱 설치 + 오프라인 (이 줄만 빼면 기능 전체가 사라집니다) -->
+<script src="src/pwa/install.js"></script>
 
 <script>
 (() => {
