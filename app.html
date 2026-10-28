@@ -1141,7 +1141,7 @@ let resetArm = false;
 function renderAll(){
   root.innerHTML = `
   <header class="demo-bar">
-    <a class="home" href="index.html">← 소개 사이트</a><div class="brand">UM LINK<small>작동형 시제품</small></div>
+    <a class="home" href="/">← 소개 사이트</a><div class="brand">UM LINK<small>작동형 시제품</small></div>
     <span class="demo-tag">가상 데이터 · 테스트 결제 · 항공사 시스템 미연동</span>
     <span class="conn c-${DB.status()}" title="${esc(DB.statusText())}">
       <i></i>${DB.status() === 'live' ? '실시간 연결됨'

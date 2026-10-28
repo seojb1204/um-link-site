@@ -118,3 +118,16 @@ UM LINK 웹사이트
 - DB flights.phase 제약조건은 scheduled / checkin / boarding / enroute /
   landed / handed_over 라서, 비행 중 세 단계는 enroute 하나로 들어갑니다.
 - 세밀한 단계는 demo_state 의 JSON 원본에 그대로 남아 있습니다.
+
+[변경 내역] 주소 정리
+- _redirects 파일을 추가해 .html 없는 주소를 씁니다.
+    /app      -> 작동형 앱      (기존 /app.html 도 그대로 열립니다)
+    /demo     -> 작동형 앱      (같은 화면, 외우기 쉬운 주소)
+    /journey  -> 여정 영상 단독 재생
+    /         -> 소개 사이트
+- /app.html 을 /app 으로 돌려보내는 301 은 일부러 넣지 않았습니다.
+  되돌림 루프가 나면 두 주소가 동시에 죽기 때문에, 예전 주소도 살려 둡니다.
+- manifest 의 start_url 을 /app 으로 바꿨습니다. 홈 화면에 설치하면
+  주소창 없이 /app 으로 열립니다.
+- 이 파일은 Netlify 전용입니다. GitHub Pages 에서는 무시되고,
+  그때는 /app.html 주소를 쓰면 됩니다.
