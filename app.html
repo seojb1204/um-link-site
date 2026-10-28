@@ -155,6 +155,13 @@ tr:last-child td{border-bottom:0}
 /* 로그인 */
 .login{padding:28px 20px;display:grid;gap:18px;max-width:560px;margin:0 auto}
 .login h2{font-size:24px}
+.gate-pick{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.gate-pick button{display:grid;gap:6px;justify-items:start;text-align:left;padding:18px 16px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);cursor:pointer;font:inherit}
+.gate-pick button:hover{border-color:var(--accent)}
+.gate-pick button .ic{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;font-weight:700;color:#fff}
+.gate-pick button b{font-size:17px;color:var(--ink)}
+.gate-pick button span:last-child{font-size:13px;color:var(--muted);line-height:1.5}
+@media (max-width:440px){.gate-pick{grid-template-columns:1fr}}
 .acct{display:flex;gap:14px;align-items:center;text-align:left;width:100%;padding:14px 16px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);cursor:pointer}
 .acct:hover{border-color:var(--accent)}
 .acct .ic{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;font-weight:700;color:#fff;flex:none}
@@ -353,6 +360,14 @@ tr:last-child td{border-bottom:0}
 .c-cols{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px;align-items:start}
 .um-card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center}
 .um-card .nm{font-weight:700;font-size:16px}
+.kid-pick{display:flex;gap:6px;padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--line)}
+.kid-pick button{position:relative;flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:7px 10px;cursor:pointer;text-align:left;font:inherit;color:var(--muted)}
+.kid-pick button b{display:block;font-size:14px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kid-pick button span{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kid-pick button.on{border-color:var(--accent);background:var(--accent-soft,rgba(27,117,148,.08))}
+.kid-pick button.on b{color:var(--accent)}
+.kid-pick .kp-dot{position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.kid-pick .kp-dot.urgent{background:var(--bad);box-shadow:0 0 0 3px rgba(190,50,50,.18)}
 .um-pick{display:flex;gap:6px;flex-wrap:wrap}
 .um-pick button{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 14px;cursor:pointer;font-size:14px}
 .um-pick button.on{border-color:var(--navy);background:var(--navy);color:var(--navy-ink);font-weight:600}
@@ -528,7 +543,7 @@ tr:last-child td{border-bottom:0}
 (() => {
 'use strict';
 /* ========== 유틸 ========== */
-const KEY = 'umlink.demo.v6';
+const KEY = 'umlink.demo.v7';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const uid = p => p + '_' + Math.random().toString(36).slice(2, 9);
 const nowISO = () => new Date().toISOString();
@@ -639,33 +654,60 @@ const PERM = {
    출발·도착 시각은 각 공항의 현지 시각이에요. 시차가 있어 출발 시각 + 비행시간으로
    계산하지 않고 그대로 써요. */
 const FLIGHT_KE017 = { no:'KE017', from:'ICN', fromCity:'인천', fromAirport:'인천국제공항', to:'LAX', toCity:'로스앤젤레스', toAirport:'로스앤젤레스 국제공항', depLocal:'14:30', arrLocal:'08:30', durationMin:660 };
+const FLIGHT_KE085 = { no:'KE085', from:'ICN', fromCity:'인천', fromAirport:'인천국제공항', to:'JFK', toCity:'뉴욕', toAirport:'존 F. 케네디 국제공항', depLocal:'10:00', arrLocal:'11:30', durationMin:840 };
+const FLIGHT_KE703 = { no:'KE703', from:'ICN', fromCity:'인천', fromAirport:'인천국제공항', to:'NRT', toCity:'도쿄', toAirport:'나리타 국제공항', depLocal:'09:05', arrLocal:'11:30', durationMin:145 };
+/* 시각 계산 — seed()에서도 쓰므로 seed보다 먼저 정의해요 */
+const shiftHM = (t, min) => { const [h, m] = t.split(':').map(Number); const x = ((h * 60 + m + min) % 1440 + 1440) % 1440; return String(Math.floor(x / 60)).padStart(2, '0') + ':' + String(x % 60).padStart(2, '0'); };
+const depTime = f => shiftHM(f.depLocal, f.delayMin); // 출발 공항 현지 시각
+const arrTime = f => shiftHM(f.arrLocal, f.delayMin); // 도착 공항 현지 시각
+const durTxt = f => `${Math.floor(f.durationMin / 60)}시간 ${f.durationMin % 60}분`;
 
 /* ========== 시드 데이터(모두 가상) ========== */
 function seed(){
   const ago = m => new Date(Date.now() - m*60000).toISOString();
   const S = {
-    ver: 6, rev: 0, seededAt: nowISO(),
+    ver: 7, rev: 0, seededAt: nowISO(),
     net: { wifi: true, failUploads: false },
     users: [
+      /* 보호자. g1은 아이가 둘(남매)이라 앱에서 아이를 골라서 봐요. */
       { id:'g1', role:'guardian', name:'김지은', relation:'모', umId:'um1', login:'guardian01', notify:true },
-      { id:'g2', role:'guardian', name:'이성호', relation:'부', umId:'um2', login:'guardian02', notify:true },
-      { id:'c1', role:'crew', name:'박서연', empNo:'C-20417', login:'crew01' },
+      { id:'g2', role:'guardian', name:'이성호', relation:'부', umId:'um3', login:'guardian02', notify:true },
+      { id:'g3', role:'guardian', name:'박정민', relation:'모', umId:'um4', login:'guardian03', notify:true },
+      /* 객실승무원. 항공편마다 담당이 달라요. */
+      { id:'c1', role:'crew', name:'박서연', empNo:'C-20417', flightId:'f1', login:'crew01' },
+      { id:'c2', role:'crew', name:'윤도현', empNo:'C-20882', flightId:'f2', login:'crew02' },
+      { id:'c3', role:'crew', name:'한지우', empNo:'C-21036', flightId:'f3', login:'crew03' },
       { id:'a1', role:'admin', name:'운영 관리자', login:'admin' },
       /* 도착지 지상직원. 마중 나온 가족은 이 시스템의 사용자가 아니에요.
-         가족은 보호자에게 받은 코드를 지상직원에게 보여주기만 해요. */
+         가족은 보호자에게 받은 코드를 지상직원에게 보여주기만 해요.
+         담당 항공편은 실제로는 공항(스테이션)별로 배정되지만,
+         시연에서는 세 편성을 모두 볼 수 있게 전환을 열어 뒀어요. */
       { id:'gs1', role:'ground', name:'Jordan Lee', org:'LAX 도착 서비스', empNo:'L-3307', flightId:'f1', login:'ground01' },
     ],
     staff: [
       { id:'s1', name:'최민준', org:'인천공항 여객서비스', empNo:'G-1182' },
       { id:'s2', name:'정하늘', org:'인천공항 탑승 지원', empNo:'G-1204' },
       { id:'s3', name:'Jordan Lee', org:'LAX 도착 서비스', empNo:'L-3307' },
+      { id:'s4', name:'Chris Morgan', org:'JFK 도착 서비스', empNo:'J-5541' },
+      { id:'s5', name:'Aiko Tanaka', org:'NRT 도착 서비스', empNo:'N-2208' },
     ],
-    flights: [{ id:'f1', ...FLIGHT_KE017, delayMin: 0, gate:'248', arrGate:'152', phase:'boarding', progress: 0 }],
+    flights: [
+      { id:'f1', ...FLIGHT_KE017, delayMin: 0, gate:'248', arrGate:'152', phase:'boarding', progress: 0 },
+      { id:'f2', ...FLIGHT_KE085, delayMin: 0, gate:'231', arrGate:'4',   phase:'cruise',  progress: 45 },
+      { id:'f3', ...FLIGHT_KE703, delayMin: 15, gate:'112', arrGate:'31',  phase:'descent', progress: 93 },
+    ],
     ums: [
+      /* f1 · 탑승 대기 — 보호자 한 명(g1)에게 아이 둘 */
       { id:'um1', code:'UM-0001', name:'하린', age:9, seat:'32A', flightId:'f1', guardians:['g1'], crewId:'c1', escortId:'s2', stage:4, pickup:'김지훈 (이모부)',
         live:{ location:'게이트 대기', since: ago(14), sleep:null, mood:'좋아요', meal:null }, service:{}, lastStatusAt: ago(14), lastStatusText:'248번 게이트에서 탑승 대기' },
-      { id:'um2', code:'UM-0002', name:'도윤', age:7, seat:'32B', flightId:'f1', guardians:['g2'], crewId:'c1', escortId:'s2', stage:4, pickup:'이수민 (고모)',
+      { id:'um2', code:'UM-0002', name:'서아', age:7, seat:'32B', flightId:'f1', guardians:['g1'], crewId:'c1', escortId:'s2', stage:4, pickup:'김지훈 (이모부)',
         live:{ location:'게이트 대기', since: ago(14), sleep:null, mood:'보통이에요', meal:null }, service:{}, lastStatusAt: ago(14), lastStatusText:'248번 게이트에서 탑승 대기' },
+      /* f2 · 비행 중 */
+      { id:'um3', code:'UM-0003', name:'도윤', age:8, seat:'41C', flightId:'f2', guardians:['g2'], crewId:'c2', escortId:'s2', stage:5, pickup:'이수민 (고모)',
+        live:{ location:'기내 좌석 41C', since: ago(45), sleep:null, mood:'좋아요', meal:'다 먹었어요' }, service:{}, lastStatusAt: ago(45), lastStatusText:'기내식 다 먹고 만화를 보고 있어요' },
+      /* f3 · 강하 중, 곧 지상직원 인계 */
+      { id:'um4', code:'UM-0004', name:'민서', age:10, seat:'18D', flightId:'f3', guardians:['g3'], crewId:'c3', escortId:'s2', stage:7, pickup:'박가온 (삼촌)',
+        live:{ location:'기내 좌석 18D', since: ago(8), sleep:null, mood:'좋아요', meal:'다 먹었어요' }, service:{}, lastStatusAt: ago(8), lastStatusText:'착륙 준비 중 · 안전벨트 착용 확인' },
     ],
     events: [], handoffs: [], consents: [], media: [], orders: [], notifications: [], outbox: [], privacyRequests: [], pickupCodes: [],
     products: [
@@ -674,30 +716,68 @@ function seed(){
       { id:'p_video', name:'AI 기념 영상', price:12900, scope:'여정 사진을 이어 붙인 30초 기념 영상 1편 제작', requires:['shoot','ai'] },
     ],
   };
+
+  /* 단계별 과거 기록을 아이마다 만들어요. m.stage 까지만 채워요. */
   S.ums.forEach((m, i) => {
     const g = S.users.find(u => u.id === m.guardians[0]);
-    S.events.push({ id:uid('ev'), umId:m.id, stage:0, kind:'stage', title:'여정 등록 완료', detail:'보호자 신청 · 서류 확인', by:'UM 데스크', at: ago(300 - i) });
-    S.handoffs.push({ id:uid('ho'), umId:m.id, stage:1, fromName:`${g.name} (보호자)`, toName:'최민준', toOrg:'인천공항 여객서비스', place:'체크인 카운터 C', method:'보호자 서명 · 직원 QR', at: ago(150 - i), status:'confirmed' });
-    S.events.push({ id:uid('ev'), umId:m.id, stage:1, kind:'stage', title:'체크인 · 첫 인계', detail:'최민준 직원에게 인계', by:'최민준', at: ago(150 - i) });
-    S.events.push({ id:uid('ev'), umId:m.id, stage:2, kind:'stage', title:'보안검색 통과', detail:'출국장 이동 완료', by:'최민준', at: ago(110 - i) });
-    S.handoffs.push({ id:uid('ho'), umId:m.id, stage:3, fromName:'최민준', toName:'정하늘', toOrg:'인천공항 탑승 지원', place:'보안검색 통과 후 · 248 게이트 구역', method:'직원 QR', at: ago(70 - i), status:'confirmed' });
-    S.events.push({ id:uid('ev'), umId:m.id, stage:3, kind:'stage', title:'디지털 인계 완료', detail:'최민준 → 정하늘', by:'정하늘', at: ago(70 - i) });
+    const f = S.flights.find(x => x.id === m.flightId);
+    const cr = S.users.find(u => u.id === m.crewId);
+    const arrStaff = S.staff.find(s => s.org.indexOf(f.to) === 0) || S.staff[2];
+    const d = n => ago(n - i);                      // 아이마다 1분씩 밀어 순서를 만들어요
+    const ev = (stage, title, detail, by, at) => S.events.push({ id:uid('ev'), umId:m.id, stage, kind:'stage', title, detail, by, at });
+    const ho = (stage, fromName, toName, toOrg, place, method, at) =>
+      S.handoffs.push({ id:uid('ho'), umId:m.id, stage, fromName, toName, toOrg, place, method, at, status:'confirmed' });
+
+    ev(0, '여정 등록 완료', '보호자 신청 · 서류 확인', 'UM 데스크', d(300));
+    ho(1, `${g.name} (보호자)`, '최민준', '인천공항 여객서비스', '체크인 카운터 C', '보호자 서명 · 직원 QR', d(150));
+    ev(1, '체크인 · 첫 인계', '최민준 직원에게 인계', '최민준', d(150));
+    ev(2, '보안검색 통과', '출국장 이동 완료', '최민준', d(110));
+    ho(3, '최민준', '정하늘', '인천공항 탑승 지원', `보안검색 통과 후 · ${f.gate} 게이트 구역`, '직원 QR', d(70));
+    ev(3, '디지털 인계 완료', '최민준 → 정하늘', '정하늘', d(70));
+
+    if (m.stage >= 5) {
+      ho(4, '정하늘', `${cr.name} (승무원)`, `${f.no} 객실`, `${f.gate}번 게이트 · 탑승교`, '승무원 태블릿 확인', d(55));
+      ev(4, '탑승 완료', `좌석 ${m.seat} · ${cr.name} 승무원이 확인했어요`, cr.name, d(55));
+      ev(5, '기내 상태 리포트', m.lastStatusText, cr.name, m.lastStatusAt);
+    }
+    if (m.stage >= 7) {
+      ev(6, '착륙 확인', `${f.toCity} ${f.toAirport} 착륙`, cr.name, d(10));
+      ev(7, '지상직원 인계 준비', `${arrStaff.org} · ${arrStaff.name} 대기 중`, cr.name, d(6));
+    }
   });
-  S.consents.push({ id:'cr1', umId:'um1', guardianId:'g1', verifiedAt: ago(320), requiredAt: ago(320), items:{ child:true, contact:true, staff:true },
-    shoot:{ granted:true, at: ago(319), withdrawnAt:null }, ai:{ granted:true, at: ago(319), withdrawnAt:null }, retention:'90',
-    history:[{ at: ago(319), text:'필수 동의 · 촬영 동의 · AI 처리 동의' }] });
+
+  /* 동의 — 하린·서아(같은 보호자)와 민서는 완료, 도윤은 첫 로그인 상태로 둬요. */
+  const consent = (umId, gid, mins) => S.consents.push({ id:uid('cr'), umId, guardianId:gid,
+    verifiedAt: ago(mins), requiredAt: ago(mins), items:{ child:true, contact:true, staff:true },
+    shoot:{ granted:true, at: ago(mins - 1), withdrawnAt:null }, ai:{ granted:true, at: ago(mins - 1), withdrawnAt:null },
+    retention:'90', history:[{ at: ago(mins - 1), text:'필수 동의 · 촬영 동의 · AI 처리 동의' }] });
+  consent('um1', 'g1', 320);
+  consent('um2', 'g1', 320);
+  consent('um4', 'g3', 300);
+
   S.media.push({ id:'md_seed1', umId:'um1', kind:'photo', scene:'terminal', src: genScene('terminal', 11), group:'checkin', caption:'체크인 마치고 출국장으로 가는 길', by:'최민준', at: ago(140), status:'sent', deleted:false });
   S.media.push({ id:'md_seed2', umId:'um1', kind:'photo', scene:'gate', src: genScene('gate', 23), group:'checkin', caption:'타고 갈 비행기를 보고 있어요', by:'정하늘', at: ago(40), status:'sent', deleted:false });
-  const n = (gid, umId, type, title, body, at, read) => S.notifications.push({ id:uid('nt'), guardianId:gid, umId, type, title, body, at, read });
-  ['g1','g2'].forEach((gid, i) => {
-    const umId = i ? 'um2' : 'um1';
-    n(gid, umId, 'handoff', '체크인 · 첫 인계 완료', '보호자 → 최민준 직원 · 체크인 카운터 C', ago(150), true);
-    n(gid, umId, 'handoff', '디지털 인계 완료', '최민준 → 정하늘 직원 · 보안검색 통과 후', ago(70), i === 1 ? false : true);
-    n(gid, umId, 'flight', '탑승구 안내', `248번 게이트에서 탑승해요. 아이는 정하늘 직원과 함께 대기 중이에요.`, ago(30), false);
+  S.media.push({ id:'md_seed3', umId:'um2', kind:'photo', scene:'gate', src: genScene('gate', 47), group:'checkin', caption:'누나랑 같이 게이트에서 기다려요', by:'정하늘', at: ago(38), status:'sent', deleted:false });
+  S.media.push({ id:'md_seed4', umId:'um4', kind:'photo', scene:'window', src: genScene('window', 61), group:'inflight', caption:'창밖으로 도쿄가 보여요', by:'한지우', at: ago(20), status:'sent', deleted:false });
+
+  const n = (gid, umId, type, title, body, at, read, sev) =>
+    S.notifications.push({ id:uid('nt'), guardianId:gid, umId, type, title, body, to:null, sev: sev || 'normal', at, read });
+
+  S.ums.forEach(m => {
+    const f = S.flights.find(x => x.id === m.flightId);
+    const cr = S.users.find(u => u.id === m.crewId);
+    m.guardians.forEach(gid => {
+      n(gid, m.id, 'handoff', '체크인 · 첫 인계 완료', '보호자 → 최민준 직원 · 체크인 카운터 C', ago(150), true);
+      n(gid, m.id, 'handoff', '디지털 인계 완료', '최민준 → 정하늘 직원 · 보안검색 통과 후', ago(70), true);
+      if (m.stage < 5) n(gid, m.id, 'flight', '탑승구 안내', `${f.gate}번 게이트에서 탑승해요. 아이는 정하늘 직원과 함께 대기 중이에요.`, ago(30), false);
+      if (m.stage >= 5) n(gid, m.id, 'handoff', '탑승 완료', `좌석 ${m.seat} · ${cr.name} 승무원이 확인했어요.`, ago(55), true);
+      if (m.stage >= 5) n(gid, m.id, 'status', '기내 상태 리포트', m.lastStatusText, m.lastStatusAt, false);
+      if (f.delayMin) n(gid, m.id, 'flight', '도착 예정 시간 갱신', `${f.delayMin}분 지연돼 ${arrTime(f)} 도착 예정이에요.`, ago(50), false);
+      if (m.stage >= 7) n(gid, m.id, 'flight', '착륙했어요', `${f.toCity} ${f.toAirport}에 내렸어요. 곧 지상직원에게 인계돼요.`, ago(10), false);
+    });
   });
   return S;
 }
-
 /* ========== 저장소 ==========
    실제 저장·동기화는 src/db/ 모듈이 담당합니다.
    - 설정 비어 있음  => 브라우저 저장소만 (기존과 동일)
@@ -708,7 +788,7 @@ let storageOK = true;
 
 /* 다른 탭 또는 다른 기기에서 상태가 바뀌었을 때 */
 function adoptState(next, origin){
-  if (!next || next.ver !== 6) return;
+  if (!next || next.ver !== 7) return;
   if (origin !== 'remote' && next.rev === S.rev) return;
   S = next;
   renderAll();
@@ -726,7 +806,7 @@ DB.init({
 });
 
 let S = DB.readLocal();
-if (!S || S.ver !== 6) { S = seed(); DB.commit(S); }
+if (!S || S.ver !== 7) { S = seed(); DB.commit(S); }
 
 function save(){ storageOK = DB.commit(S); }
 function commit(fn){ fn(S); S.rev++; tickProducing(true); save(); renderAll(); if (!storageOK) toast('브라우저 저장 공간이 부족하거나 차단돼 이 탭에만 반영돼요.', 'err'); }
@@ -740,13 +820,12 @@ const user = id => S.users.find(u => u.id === id);
 const staff = id => S.staff.find(s => s.id === id);
 const umOf = id => S.ums.find(m => m.id === id);
 const flightOf = m => S.flights.find(f => f.id === m.flightId);
+/* 관리자 콘솔이 지금 보고 있는 항공편. 선택이 없거나 사라졌으면 첫 편성. */
+const selFlight = p => S.flights.find(f => f.id === (p.ui && p.ui.af)) || S.flights[0];
+const flightById = id => S.flights.find(f => f.id === id) || S.flights[0];
 const consentOf = umId => S.consents.find(c => c.umId === umId);
 const consentOK = (umId, k) => { const c = consentOf(umId); return !!(c && c[k] && c[k].granted); };
 const product = id => S.products.find(p => p.id === id);
-const shiftHM = (t, min) => { const [h, m] = t.split(':').map(Number); const x = ((h * 60 + m + min) % 1440 + 1440) % 1440; return String(Math.floor(x / 60)).padStart(2, '0') + ':' + String(x % 60).padStart(2, '0'); };
-const depTime = f => shiftHM(f.depLocal, f.delayMin); // 출발 공항 현지 시각
-const arrTime = f => shiftHM(f.arrLocal, f.delayMin); // 도착 공항 현지 시각
-const durTxt = f => `${Math.floor(f.durationMin / 60)}시간 ${f.durationMin % 60}분`;
 const activeOrder = (umId, pid) => S.orders.filter(o => o.umId === umId && o.productId === pid && !['payment_failed','refunded'].includes(o.status)).slice(-1)[0];
 const photoPass = umId => { const o = activeOrder(umId, 'p_photo'); return !!(o && o.status === 'active'); };
 const sentMedia = umId => S.media.filter(x => x.umId === umId && !x.deleted && x.status === 'sent');
@@ -841,7 +920,7 @@ function sendMediaNow(S, item){
   }
 }
 function flushOutbox(S){
-  const crewName = (S.users.find(u => u.role === 'crew') || {}).name;
+  const crewName = ((m && user(m.crewId)) || S.users.find(u => u.role === 'crew') || {}).name;
   S.outbox.forEach(ob => { if (ob.type === 'report') applyReport(S, ob.umId, ob.payload, ob.by || crewName); });
   S.outbox = [];
   S.media.filter(x => x.status === 'queued').forEach(x => sendMediaNow(S, x));
@@ -857,7 +936,23 @@ const panes = [
 ];
 function persistUI(){ try { sessionStorage.setItem('umlink.layout', layout); sessionStorage.setItem('umlink.sessions', JSON.stringify(panes.map(p => p.session))); } catch(e){} }
 const visiblePanes = () => layout === 'split' ? panes : [panes[0]];
-const pUser = p => p.session && user(p.session.userId);
+/* 이 보호자에게 연결된 아이들 (등록 순서) */
+const myUms = u => S.ums.filter(m => m.guardians.includes(u.id));
+
+/* 로그인한 사용자.
+   보호자가 아이를 둘 이상 맡고 있으면, 화면에서 고른 아이를 umId로 바꿔 돌려줘요.
+   아래 화면·동작 코드는 전부 u.umId 하나만 보면 되도록 여기서 정리해요.
+   S.users 원본은 건드리지 않아요 (복사본을 돌려줘요). */
+function pUser(p){
+  const u = p.session && user(p.session.userId);
+  if (!u || u.role !== 'guardian') return u || null;
+  const mine = myUms(u);
+  if (!mine.length) return u;
+  let sel = p.ui && p.ui.gum;
+  if (!sel || !mine.find(m => m.id === sel)) sel = mine[0].id;
+  if (p.ui) p.ui.gum = sel;
+  return sel === u.umId ? u : Object.assign({}, u, { umId: sel });
+}
 
 
 /* ========== 비행 여정 · 항공기 이동 시뮬레이션 ========== */
@@ -1083,26 +1178,67 @@ function renderPane(p){
 function rerender(p){ const el = root.querySelector(`[data-pane="${p.id}"]`); if (el) { el.innerHTML = renderPane(p); fxMount(p); } }
 
 /* ---------- 로그인 ---------- */
+/* 계정 목록에 쓰는 설명문. 시드가 바뀌어도 따라오도록 데이터에서 만들어요. */
+function acctDesc(u){
+  if (u.role === 'guardian') {
+    const mine = myUms(u);
+    const kids = mine.map(m => `${m.name}(만 ${m.age}세)`).join(' · ');
+    const fs = [...new Set(mine.map(m => flightOf(m).no))].join(' · ');
+    const c = mine.every(m => { const x = consentOf(m.id); return x && x.requiredAt; });
+    return `${kids} · ${fs}${mine.length > 1 ? ' · 아이 둘' : ''} · ${c ? '동의 완료' : '첫 로그인, 동의 절차부터'}`;
+  }
+  if (u.role === 'crew')   { const f = S.flights.find(x => x.id === u.flightId); const n = S.ums.filter(m => m.crewId === u.id).length;
+    return `${f ? f.no : '미배정'} ${f ? PHASES[f.phase] : ''} · 담당 UM ${n}명`; }
+  if (u.role === 'ground') { const f = S.flights.find(x => x.id === u.flightId);
+    return `${esc(u.org)} · 인수자 확인만${f ? ` · 현재 ${f.no}` : ''}`; }
+  return '항공편·여정·주문·동의 관리 · 세 편성 전환';
+}
 function renderLogin(p){
-  const acct = (id, color, letter, title, desc) => { const u = user(id); return `<button class="acct" data-act="login" data-uid="${id}"><span class="ic" style="background:${color}">${letter}</span><span class="t"><b>${title}</b><span>${desc} · ID ${esc(u.login)}</span></span><span class="pill">로그인</span></button>`; };
-  return `<div class="login">
-    <div><div class="eyebrow">UM LINK · 비동반 소아 여정 관리</div><h2>시연 계정으로 로그인</h2><p class="muted small" style="margin-top:6px">사용자 유형마다 볼 수 있는 화면과 데이터가 달라요. 두 탭이나 '나란히 시연'으로 열면 한쪽에서 기록한 내용이 다른 쪽에 바로 반영돼요.</p></div>
-    <div class="stack">
-      ${acct('g1','var(--accent)','보','보호자 · 김지은 (가상)','하린(가상, 만 9세) · 촬영·AI 동의 완료')}
-      ${acct('g2','var(--accent)','보','보호자 · 이성호 (가상)','도윤(가상, 만 7세) · 첫 로그인, 동의 절차부터')}
-      ${acct('c1','var(--navy-2)','승','객실승무원 · 박서연 (가상)','KE017 담당 UM 2명')}
-      ${acct('a1','var(--warn)','관','관리자','항공편·여정·주문·동의 관리')}
-      ${acct('gs1','var(--ok)','지','지상직원 · Jordan Lee (가상)','LAX 도착 서비스 · 인수자 확인만')}
+  const SKIN = { guardian:['var(--accent)','보','보호자'], crew:['var(--navy-2)','승','객실승무원'],
+                 admin:['var(--warn)','관','관리자'], ground:['var(--ok)','지','지상직원'] };
+  const acct = id => { const u = user(id); if (!u) return '';
+    const [color, letter, rl] = SKIN[u.role];
+    const title = u.role === 'admin' ? '관리자' : `${rl} · ${esc(u.name)} (가상)`;
+    return `<button class="acct" data-act="login" data-uid="${id}"><span class="ic" style="background:${color}">${letter}</span><span class="t"><b>${title}</b><span>${acctDesc(u)} · ID ${esc(u.login)}</span></span><span class="pill">로그인</span></button>`; };
+  const list = r => S.users.filter(u => u.role === r).map(u => acct(u.id)).join('');
+  const head = (h, sub) => `<div><div class="eyebrow">UM LINK · 비동반 소아 여정 관리</div><h2>${h}</h2><p class="muted small" style="margin-top:6px">${sub}</p></div>`;
+  const note = `<div class="note"><span class="i">i</span><span>시제품 로그인이에요. 실제 본인인증·사내 SSO는 연동되지 않았고, 버튼을 누르면 해당 역할 권한으로 바로 접속해요.</span></div>`;
+  const back = `<button class="btn btn-ghost btn-sm" data-act="gate" data-v="" style="justify-self:start">← 처음으로</button>`;
+  const gate = p.ui.gate;
+
+  /* 1단계 — 보호자 / 직원 */
+  if (!gate) return `<div class="login">
+    ${head('어떤 쪽으로 들어갈까요?', '보호자와 항공사 직원만 쓰는 서비스예요. 마중 나온 가족은 사용자가 아니라, 보호자에게 받은 코드를 지상직원에게 보여주는 쪽이에요.')}
+    <div class="gate-pick">
+      <button data-act="gate" data-v="guardian"><span class="ic" style="background:var(--accent)">보</span><b>보호자</b><span>아이의 현재 단계·알림·사진을 봐요</span></button>
+      <button data-act="gate" data-v="staff"><span class="ic" style="background:var(--navy-2)">직</span><b>직원</b><span>객실승무원 · 지상직원 · 관리자</span></button>
     </div>
-    <div class="note"><span class="i">i</span><span>시제품 로그인이에요. 실제 본인인증·사내 SSO는 연동되지 않았고, 버튼을 누르면 해당 역할 권한으로 바로 접속해요.</span></div>
-  </div>`;
+    <button class="btn btn-ghost btn-sm" data-act="gate" data-v="all" style="justify-self:start">시연 계정 전체 보기</button>
+    ${note}</div>`;
+
+  /* 2단계 — 보호자 */
+  if (gate === 'guardian') return `<div class="login">
+    ${head('보호자 계정', `항공편이 ${S.flights.length}개 있고 보호자마다 담당 아이가 달라요. 다른 항공편의 아이는 보이지 않아요.`)}
+    <div class="stack">${list('guardian')}</div>${back}${note}</div>`;
+
+  /* 2단계 — 직원 */
+  if (gate === 'staff') return `<div class="login">
+    ${head('직원 계정', '객실승무원은 자기 항공편의 UM만, 지상직원은 담당 항공편의 인수자 확인만 볼 수 있어요. 관리자는 세 편성을 모두 봐요.')}
+    <div class="stack">${list('crew')}${list('ground')}${list('admin')}</div>${back}${note}</div>`;
+
+  /* 계정 전환 — 한 번에 전체 */
+  return `<div class="login">
+    ${head('시연 계정으로 로그인', "사용자 유형마다 볼 수 있는 화면과 데이터가 달라요. 두 탭이나 '나란히 시연'으로 열면 한쪽에서 기록한 내용이 다른 쪽에 바로 반영돼요.")}
+    <div class="stack">${list('guardian')}${list('crew')}${list('ground')}${list('admin')}</div>
+    <button class="btn btn-ghost btn-sm" data-act="gate" data-v="" style="justify-self:start">보호자 / 직원 화면으로</button>
+    ${note}</div>`;
 }
 
 /* ---------- 보호자 ---------- */
 function renderGuardian(p, u){
   const m = umOf(u.umId); const f = flightOf(m); const c = consentOf(m.id);
   if (!can(u, 'um.read', m)) return `<div class="empty">연결된 아이 정보가 없어요.</div>`;
-  if (!c || !c.requiredAt) return gOnboard(p, u, m);
+  if (!c || !c.requiredAt) return gKidPicker(p, u, m) + gOnboard(p, u, m);
   if (p.ui.gsub) return gSub(p, u, m, f);
   const tab = p.ui.gtab || 'home';
   const unread = S.notifications.filter(n => n.guardianId === u.id && !n.read).length;
@@ -1110,9 +1246,23 @@ function renderGuardian(p, u){
   const tb = (k, ic, label, badge) => `<button data-act="gtab" data-v="${k}" class="${tab === k ? 'on' : ''}">${ic}<span>${label}</span>${badge ? `<span class="badge">${badge}</span>` : ''}</button>`;
   return `<div class="g-app">
     <div class="g-top"><span class="logo">UM Link</span><span class="kid">${esc(m.name)} · 만 ${m.age}세 · ${esc(f.no)}</span><button class="icon-btn" data-act="gsub" data-v="settings" aria-label="설정">${I.gear}</button></div>
+    ${gKidPicker(p, u, m)}
     <main class="g-main">${body}</main>
     <nav class="g-tabs">${tb('home', I.home, '홈')}${tb('flight', I.plane, '비행 여정')}${tb('live', I.live, '실시간 현황')}${tb('noti', I.bell, '알림', u.notify && unread ? unread : 0)}${tb('archive', I.photo, '아카이브')}</nav>
   </div>`;
+}
+/* 아이가 둘 이상인 보호자만 보이는 전환 줄. 한 명이면 아무것도 안 그려요. */
+function gKidPicker(p, u, m){
+  const mine = myUms(u);
+  if (mine.length < 2) return '';
+  const btn = x => {
+    const f = flightOf(x);
+    const al = openAlarms(x.id, u.id).length;
+    const un = S.notifications.filter(n => n.umId === x.id && n.guardianId === u.id && !n.read).length;
+    return `<button data-act="gum" data-v="${x.id}" class="${x.id === m.id ? 'on' : ''}" aria-pressed="${x.id === m.id}">
+      <b>${esc(x.name)}</b><span>만 ${x.age}세 · ${esc(f.no)}</span>${al ? `<i class="kp-dot urgent" aria-label="위급 알림 ${al}건"></i>` : un ? `<i class="kp-dot" aria-label="새 알림 ${un}건"></i>` : ''}</button>`;
+  };
+  return `<div class="kid-pick" role="group" aria-label="아이 선택">${mine.map(btn).join('')}</div>`;
 }
 function gOnboard(p, u, m){
   const ob = p.ui.ob || (p.ui.ob = { step:1, verified:false, req:{}, shoot:false, ai:false, retention:'30', terms:false });
@@ -1570,7 +1720,9 @@ function renderGround(p, u){
   const doneList = mine.filter(m => m.stage >= 9);
   const notYet = mine.filter(m => m.stage < 8);
 
-  const head = `<div class="g-top"><span class="logo">UM Link</span><span class="kid">${esc(u.org || '도착 서비스')} · ${esc(f.no)} 도착</span></div>`;
+  const station = u.org && u.org.indexOf(f.to) === 0 ? u.org : `${f.to} 도착 서비스`;
+  const head = `<div class="g-top"><span class="logo">UM Link</span><span class="kid">${esc(station)} · ${esc(f.no)} 도착</span></div>`
+    + `<div class="kid-pick" role="group" aria-label="담당 항공편 선택">${S.flights.map(x => `<button data-act="pick-flight" data-v="${x.id}" class="${x.id === f.id ? 'on' : ''}" aria-pressed="${x.id === f.id}"><b>${esc(x.no)}</b><span>${x.to} 도착 · ${PHASES[x.phase]}</span></button>`).join('')}</div>`;
 
   const card = m => {
     const c = pickupCode(m.id), live = codeLive(c);
@@ -1753,7 +1905,7 @@ function cHandoff(p, u, ums, m, f){
         <span class="small muted">지상직원의 직원 QR을 스캔하거나 사번을 입력해요</span>
         <div class="ho-grid"><button class="qr ${st ? 'got' : ''}" data-act="qr" ${landedDone ? '' : 'disabled'}>${st ? 'QR 확인됨' : 'QR 스캔<br><span style="font-weight:500;font-size:11px">시뮬레이션</span>'}</button>
           <div class="stack" style="gap:10px">
-            <div class="row" style="flex-wrap:nowrap"><input class="input" id="emp-${p.id}-${m.id}" data-bind="ho.${m.id}.emp" value="${esc(ho.emp)}" placeholder="사번 예: L-3307" ${landedDone ? '' : 'disabled'}><button class="btn btn-line btn-sm" data-act="emp-check" ${landedDone ? '' : 'disabled'}>확인</button></div>
+            <div class="row" style="flex-wrap:nowrap"><input class="input" id="emp-${p.id}-${m.id}" data-bind="ho.${m.id}.emp" value="${esc(ho.emp)}" placeholder="사번 예: ${esc((S.staff.find(x => x.org.indexOf(f.to) === 0) || S.staff[2]).empNo)}" ${landedDone ? '' : 'disabled'}><button class="btn btn-line btn-sm" data-act="emp-check" ${landedDone ? '' : 'disabled'}>확인</button></div>
             <dl class="kv"><dt>인수 직원</dt><dd>${st ? `${esc(st.name)} · ${esc(st.org)}` : '<span class="muted">미확인</span>'}</dd><dt>시간 · 장소</dt><dd><span class="mono">${hm(nowISO())}</span> · ${f.to} ${f.arrGate}번 게이트</dd></dl>
             <button class="btn btn-primary btn-block" data-act="ground-handoff" ${st && allChk ? '' : 'disabled'}>인계 완료로 기록</button>
             ${landedDone && !(st && allChk) ? '<span class="small muted">인수 직원 확인과 인계 전 확인 항목이 모두 필요해요.</span>' : ''}
@@ -1791,8 +1943,10 @@ function aOps(){
   <div class="note"><span class="i">i</span><span>관리자는 운영 데이터와 주문 상태만 보고, 보호자 전용 사진·영상 원본은 보지 않아요.</span></div>`;
 }
 function aFlight(p){
-  const f = S.flights[0];
-  return `<section class="card stack"><div class="sec-title">${esc(f.no)} · ${f.from} → ${f.to} <span class="pill sim">가상 항공편</span></div>
+  const f = selFlight(p);
+  const tab = x => `<button class="chip ${x.id === f.id ? 'on' : ''}" data-act="pick-flight" data-v="${x.id}">${esc(x.no)} · ${x.from}→${x.to} <span class="small muted">${PHASES[x.phase]}</span></button>`;
+  return `<section class="card stack"><div class="field"><span class="lbl">항공편 선택 (${S.flights.length}편성)</span><div class="chips">${S.flights.map(tab).join('')}</div></div></section>
+  <section class="card stack"><div class="sec-title">${esc(f.no)} · ${f.from} → ${f.to} <span class="pill sim">가상 항공편</span></div>
     <div class="form-grid">
       <div class="field"><label for="a-delay-${p.id}">지연</label><select class="input" id="a-delay-${p.id}" data-act-change="a-delay">${[0,15,30,60,90].map(v => `<option value="${v}" ${f.delayMin === v ? 'selected' : ''}>${v ? v + '분 지연' : '정시'}</option>`).join('')}</select></div>
       <div class="field"><label for="a-gate-${p.id}">출발 게이트</label><div class="row" style="flex-wrap:nowrap"><input class="input" id="a-gate-${p.id}" data-bind="agate" value="${esc(p.ui.agate ?? f.gate)}"><button class="btn btn-line btn-sm" data-act="a-gate">변경</button></div></div>
@@ -1822,7 +1976,9 @@ function aConsent(p){
   <section class="card stack"><div class="sec-title">개인정보 삭제 요청</div>
     ${S.privacyRequests.length ? S.privacyRequests.map(r => `<div class="row between"><span>${esc(umOf(r.umId).name)} · ${esc(user(r.guardianId).name)} · <span class="mono">${hm(r.at)}</span></span>${r.status === 'done' ? `<span class="pill ok">처리 완료 ${hm(r.doneAt)}</span>` : `<button class="btn btn-primary btn-sm" data-act="a-pi-done" data-id="${r.id}">삭제 처리</button>`}</div>`).join('') : '<span class="small muted">접수된 요청이 없어요.</span>'}
   </section>
-  <section class="card row between"><div><b>보호자 동의 초기화</b><div class="small muted">도윤 보호자 계정의 첫 로그인 동의 절차를 다시 시연해요.</div></div><button class="btn btn-line btn-sm" data-act="a-reset-consent" data-id="um2">도윤 동의 초기화</button></section>`;
+  <section class="card stack"><div class="sec-title">보호자 동의 초기화</div>
+    <span class="small muted">고른 아이의 동의를 지우면 그 보호자 앱이 첫 로그인 동의 절차부터 다시 시작해요.</span>
+    <div class="chips">${S.ums.map(m => `<button class="chip" data-act="a-reset-consent" data-id="${m.id}">${esc(m.name)} 동의 초기화</button>`).join('')}</div></section>`;
 }
 function aOrders(){
   return `<div class="tiles">${S.products.map(pr => `<div class="tile"><div class="k">${esc(pr.name)}</div><div class="v mono">${won(pr.price)}</div><div class="small muted">주문 ${S.orders.filter(o => o.productId === pr.id).length}건</div></div>`).join('')}</div>
@@ -1862,7 +2018,9 @@ const A = {
   layout(p, el){ layout = el.dataset.v; if (layout === 'split') { if (!panes[1].session) panes[1].session = { userId:'g1' }; } persistUI(); renderAll(); },
   reset(){ if (!resetArm) { resetArm = true; renderAll(); setTimeout(() => { if (resetArm) { resetArm = false; renderAll(); } }, 4000); return; } resetArm = false; panes.forEach(p => p.ui = {}); commit(s => { const n = seed(); Object.keys(s).forEach(k => delete s[k]); Object.assign(s, n); }); toast('시연 데이터를 처음 상태로 되돌렸어요.'); },
   login(p, el){ p.session = { userId: el.dataset.uid }; p.ui = {}; persistUI(); renderAll(); },
-  logout(p){ p.session = null; p.ui = {}; persistUI(); renderAll(); },
+  /* 계정 전환은 2단계를 건너뛰고 전체 목록으로 바로 가요 */
+  logout(p){ p.session = null; p.ui = { gate:'all' }; persistUI(); renderAll(); },
+  gate(p, el){ p.ui.gate = el.dataset.v || null; rerender(p); },
   /* 보호자 */
   gtab(p, el){ p.ui.gtab = el.dataset.v; rerender(p); },
   'gtab-go'(p, el){ p.ui.gsub = null; p.ui.gtab = el.dataset.v; rerender(p); },
@@ -1932,7 +2090,7 @@ const A = {
     if (!codeLive(c)) return toast('쓸 수 있는 코드가 없어요. 보호자에게 재발급을 요청해 주세요.', 'err', '지상직원 앱');
     if (typed !== c.code) return toast('코드가 맞지 않아요. 인수자에게 다시 확인해 주세요.', 'err', '지상직원 앱');
     commit(s => {
-      const x = s.ums.find(y => y.id === m.id), f = s.flights[0], t = nowISO();
+      const x = s.ums.find(y => y.id === m.id), f = s.flights.find(z => z.id === x.flightId), t = nowISO();
       const who = x.pickup || '인수자';
       const pc = s.pickupCodes.find(y => y.id === c.id);
       pc.usedAt = t; pc.usedByName = who; pc.verifiedBy = u.name;
@@ -2047,6 +2205,12 @@ const A = {
   /* 승무원 */
   ctab(p, el){ p.ui.ctab = el.dataset.v; rerender(p); },
   cum(p, el){ p.ui.cum = el.dataset.v; rerender(p); },
+  /* 보호자가 아이를 바꿀 때. 아이마다 보던 화면이 다를 수 있어 홈으로 돌려놔요. */
+  gum(p, el){ p.ui.gum = el.dataset.v; p.ui.gsub = null; p.ui.stack = []; p.ui.gtab = 'home'; rerender(p); },
+  /* 지상직원·관리자가 담당(조회) 항공편을 바꿀 때 */
+  'pick-flight'(p, el){ const u = pUser(p); if (!u) return;
+    if (u.role === 'ground') { commit(s => { const x = s.users.find(y => y.id === u.id); x.flightId = el.dataset.v; }); return; }
+    p.ui.af = el.dataset.v; p.ui.cum = null; rerender(p); },
   goto(p, el){ if (el.dataset.id) p.ui.cum = el.dataset.id; p.ui.ctab = el.dataset.tab; rerender(p); },
   wifi(p){ const on = !S.net.wifi; const n = S.outbox.length + S.media.filter(x => x.status === 'queued').length;
     commit(s => { s.net.wifi = on; if (on) flushOutbox(s); });
@@ -2055,7 +2219,7 @@ const A = {
     const u = pUser(p), m = umOf(el.dataset.id); if (!can(u, 'stage.write', m)) return deny(p);
     if (m.stage !== 4) return;
     commit(s => { const x = s.ums.find(y => y.id === m.id); const t = nowISO(); const es = s.staff.find(y => y.id === x.escortId);
-      s.handoffs.push({ id:uid('ho'), umId:x.id, stage:4, fromName:es.name, toName:`${u.name} (승무원)`, toOrg:`${s.flights[0].no} 객실`, place:`${s.flights[0].gate}번 게이트 · 탑승교`, method:'승무원 태블릿 확인', at:t, status:'confirmed' });
+      s.handoffs.push({ id:uid('ho'), umId:x.id, stage:4, fromName:es.name, toName:`${u.name} (승무원)`, toOrg:`${s.flights.find(z => z.id === x.flightId).no} 객실`, place:`${s.flights.find(z => z.id === x.flightId).gate}번 게이트 · 탑승교`, method:'승무원 태블릿 확인', at:t, status:'confirmed' });
       addEvent(s, x.id, { stage:4, title:'탑승 완료', detail:`좌석 ${x.seat} · 승무원 ${u.name} 확인`, by:u.name, at:t });
       x.stage = 5; x.live = { ...x.live, location:'좌석에 있어요', since:t }; x.lastStatusAt = t; x.lastStatusText = `탑승 완료 · 좌석 ${x.seat}`;
       notify(s, x.id, 'handoff', '탑승 완료', `${x.name}이(가) ${x.seat} 좌석에 탑승했어요. ${es.name} 직원 → ${u.name} 승무원 인계.`); });
@@ -2094,7 +2258,7 @@ const A = {
     commit(s => { const x = s.media.find(y => y.id === id); if (x) { s.net.failUploads = false; sendMediaNow(s, x); } }); toast('다시 보냈어요. (실패 재현 설정을 껐어요)', '', '승무원 앱'); },
   land(p, el){
     const u = pUser(p), m = umOf(el.dataset.id); if (!can(u, 'stage.write', m) || m.stage !== 5) return deny(p);
-    commit(s => { const x = s.ums.find(y => y.id === m.id), f = s.flights[0], t = nowISO();
+    commit(s => { const x = s.ums.find(y => y.id === m.id), f = s.flights.find(z => z.id === x.flightId), t = nowISO();
       if (f.phase !== 'landed') { f.phase = 'landed'; f.progress = 100; }
       addEvent(s, x.id, { stage:5, title:'비행 종료', detail:'기내 상태 리포트 종료', by:u.name, at:t });
       addEvent(s, x.id, { stage:6, title:'착륙 확인', detail:`${f.toCity} 착륙 · 승무원 ${u.name} 확인`, by:u.name, at:t });
@@ -2102,13 +2266,17 @@ const A = {
       notify(s, x.id, 'flight', '착륙했어요', `${f.toCity}에 도착했어요. ${x.name}은(는) 승무원과 함께 지상직원 인계를 준비해요.`); });
     toast(`${m.name} 착륙 확인을 기록하고 보호자에게 알렸어요.`, '', '승무원 앱');
   },
-  qr(p){ const m = umOf(p.ui.cum); p.ui.ho[m.id].staffId = 's3'; p.ui.ho[m.id].emp = 'L-3307'; toast('지상직원 QR을 확인했어요 (시뮬레이션).', '', '승무원 앱'); rerender(p); },
+  /* QR 스캔 시뮬레이션. 도착 공항의 지상직원을 찾아 넣어요 (편성마다 달라요). */
+  qr(p){ const m = umOf(p.ui.cum); const f = flightOf(m);
+    const st = S.staff.find(x => x.org.indexOf(f.to) === 0) || S.staff[2];
+    p.ui.ho[m.id].staffId = st.id; p.ui.ho[m.id].emp = st.empNo;
+    toast(`${st.name} · ${st.org} QR을 확인했어요 (시뮬레이션).`, '', '승무원 앱'); rerender(p); },
   'emp-check'(p){ const m = umOf(p.ui.cum); const h = p.ui.ho[m.id]; const st = S.staff.find(s => s.empNo.toLowerCase() === (h.emp || '').trim().toLowerCase());
-    if (!st) { h.staffId = null; toast('등록된 지상직원 사번이 아니에요. 예: L-3307', 'err', '승무원 앱'); } else { h.staffId = st.id; toast(`${st.name} · ${st.org} 확인`, '', '승무원 앱'); } rerender(p); },
+    if (!st) { h.staffId = null; toast('등록된 지상직원 사번이 아니에요. 도착 공항 직원 사번을 확인해 주세요.', 'err', '승무원 앱'); } else { h.staffId = st.id; toast(`${st.name} · ${st.org} 확인`, '', '승무원 앱'); } rerender(p); },
   'ground-handoff'(p){
     const u = pUser(p), m = umOf(p.ui.cum); if (!can(u, 'handoff.write', m) || m.stage !== 7) return deny(p);
     const h = p.ui.ho[m.id], st = staff(h.staffId);
-    commit(s => { const x = s.ums.find(y => y.id === m.id), f = s.flights[0], t = nowISO();
+    commit(s => { const x = s.ums.find(y => y.id === m.id), f = s.flights.find(z => z.id === x.flightId), t = nowISO();
       s.handoffs.push({ id:uid('ho'), umId:x.id, stage:7, fromName:`${u.name} (승무원)`, toName:st.name, toOrg:st.org, place:`${f.to} ${f.arrGate}번 게이트`, method: h.emp ? '직원 QR · 사번' : '직원 QR', at:t, status:'confirmed', checklist:{ ...h.check, landingNotice:true } });
       addEvent(s, x.id, { stage:7, title:'지상직원 인계', detail:`${u.name} → ${st.name}`, by:u.name, at:t });
       x.stage = 8; x.lastStatusAt = t; x.lastStatusText = `지상직원 ${st.name}과 도착장 이동`;
@@ -2118,16 +2286,17 @@ const A = {
   /* 관리자 */
   atab(p, el){ p.ui.atab = el.dataset.v; rerender(p); },
   'a-phase'(p, el){ const u = pUser(p); if (!can(u, 'flight.write')) return deny(p); const ph = el.dataset.v;
-    commit(s => { const f = s.flights[0]; const prev = f.phase; f.phase = ph; f.progress = PHASE_SIM[ph][2] || (ph === 'cruise' ? Math.max(f.progress, 10) : 0); if (ph === 'cruise') f.progress = Math.min(Math.max(f.progress, 15), 85);
-      if (ph === 'departed' && prev !== 'departed') s.ums.forEach(m => { if (m.stage >= 5) notify(s, m.id, 'flight', '이륙했어요', `${f.no}편이 출발했어요. 도착 예정 ${arrTime(f)}.`); }); }); },
-  'a-gate'(p){ const u = pUser(p); if (!can(u, 'flight.write')) return deny(p); const g = (p.ui.agate || '').trim(); const f = S.flights[0];
+    const fid = selFlight(p).id;
+    commit(s => { const f = s.flights.find(z => z.id === fid); const prev = f.phase; f.phase = ph; f.progress = PHASE_SIM[ph][2] || (ph === 'cruise' ? Math.max(f.progress, 10) : 0); if (ph === 'cruise') f.progress = Math.min(Math.max(f.progress, 15), 85);
+      if (ph === 'departed' && prev !== 'departed') s.ums.filter(m => m.flightId === fid).forEach(m => { if (m.stage >= 5) notify(s, m.id, 'flight', '이륙했어요', `${f.no}편이 출발했어요. 도착 예정 ${arrTime(f)}.`); }); }); },
+  'a-gate'(p){ const u = pUser(p); if (!can(u, 'flight.write')) return deny(p); const g = (p.ui.agate || '').trim(); const f = selFlight(p);
     if (!g || g === f.gate) return toast('새 게이트 번호를 입력해 주세요.', 'err', '관리자');
-    commit(s => { const ff = s.flights[0]; const old = ff.gate; ff.gate = g; s.ums.forEach(m => notify(s, m.id, 'flight', '게이트 변경', `${old}번에서 ${g}번 게이트로 바뀌었어요.${m.stage <= 4 ? ' 아이도 직원과 함께 이동해요.' : ''}`)); });
+    commit(s => { const ff = s.flights.find(z => z.id === f.id); const old = ff.gate; ff.gate = g; s.ums.filter(m => m.flightId === ff.id).forEach(m => notify(s, m.id, 'flight', '게이트 변경', `${old}번에서 ${g}번 게이트로 바뀌었어요.${m.stage <= 4 ? ' 아이도 직원과 함께 이동해요.' : ''}`)); });
     p.ui.agate = null; toast('게이트 변경을 보호자에게 알렸어요.', '', '관리자'); },
   'a-final'(p, el){ const u = pUser(p); const m = umOf(el.dataset.id); if (!can(u, 'um.write') || m.stage !== 8) return deny(p);
     const who = ((p.ui.pick || {})[m.id] ?? m.pickup).trim() || m.pickup; const gh = lastHandoff(m.id, 7);
     commit(s => { const x = s.ums.find(y => y.id === m.id), t = nowISO();
-      s.handoffs.push({ id:uid('ho'), umId:x.id, stage:8, fromName: gh ? gh.toName : '지상직원', toName: who, toOrg:'보호자 지정 인수자', place:`${s.flights[0].toCity} 공항 도착장`, method:'인증 코드 · 신분증 확인', at:t, status:'confirmed' });
+      s.handoffs.push({ id:uid('ho'), umId:x.id, stage:8, fromName: gh ? gh.toName : '지상직원', toName: who, toOrg:'보호자 지정 인수자', place:`${s.flights.find(z => z.id === x.flightId).toCity} 공항 도착장`, method:'인증 코드 · 신분증 확인', at:t, status:'confirmed' });
       addEvent(s, x.id, { stage:8, title:'최종 인계', detail:`${who}에게 인계`, by: gh ? gh.toName : '지상직원', at:t });
       x.stage = 9; x.lastStatusAt = t; x.lastStatusText = `${who}에게 최종 인계 완료`;
       notify(s, x.id, 'handoff', '최종 인계 완료', `${who}에게 ${x.name}을(를) 인계했어요. 여정이 끝났어요.`); });
@@ -2140,7 +2309,8 @@ const A = {
       reconcile(s, r.umId);
       notify(s, r.umId, 'privacy', '개인정보 삭제 처리 완료', '콘텐츠와 메모를 삭제하고 선택 동의를 철회했어요. 안전 인계 기록은 보관 기간 후 파기돼요.'); });
     toast('삭제 요청을 처리했어요.', '', '관리자'); },
-  'a-reset-consent'(p, el){ const id = el.dataset.id; commit(s => { s.consents = s.consents.filter(c => c.umId !== id); s.orders = s.orders.filter(o => o.umId !== id); }); panes.forEach(q => { if (pUser(q) && pUser(q).umId === id) q.ui = {}; }); toast('도윤 보호자 동의를 초기화했어요.', '', '관리자'); },
+  'a-reset-consent'(p, el){ const id = el.dataset.id; commit(s => { s.consents = s.consents.filter(c => c.umId !== id); s.orders = s.orders.filter(o => o.umId !== id); }); panes.forEach(q => { const qu = pUser(q); if (qu && qu.role === 'guardian' && myUms(qu).some(x => x.id === id)) q.ui = {}; });
+    toast(`${(umOf(id) || {}).name || '해당 아동'} 보호자 동의를 초기화했어요.`, '', '관리자'); },
   'a-refund'(p, el){ const u = pUser(p); if (!can(u, 'order.read')) return deny(p); const id = el.dataset.id;
     commit(s => { const o = s.orders.find(x => x.id === id); o.payment = 'test_refunded'; setOrder(o, 'refunded', '관리자 테스트 환불'); notify(s, o.umId, 'order', `${s.products.find(x => x.id === o.productId).name} 테스트 환불`, '시제품 테스트 결제가 환불 처리됐어요. 실제 청구는 없었어요.'); }); },
 };
@@ -2158,12 +2328,13 @@ const CH = {
   'ho-check'(p, el){ p.ui.ho[p.ui.cum].check[el.dataset.k] = el.checked; rerender(p); },
   'fail-uploads'(p, el){ commit(s => { s.net.failUploads = el.checked; }); },
   'a-delay'(p, el){ const u = pUser(p); if (!can(u, 'flight.write')) return deny(p); const v = +el.value;
-    commit(s => { const f = s.flights[0]; f.delayMin = v;
-      s.ums.forEach(m => { const es = s.staff.find(x => x.id === m.escortId);
+    const fid = selFlight(p).id;
+    commit(s => { const f = s.flights.find(z => z.id === fid); f.delayMin = v;
+      s.ums.filter(m => m.flightId === fid).forEach(m => { const es = s.staff.find(x => x.id === m.escortId);
         notify(s, m.id, 'flight', v ? '항공편 지연 안내' : '정시 운항 안내', v ? `출발이 ${v}분 늦어져요.${m.stage <= 4 ? ` 아이는 ${es.name} 직원과 ${f.gate}번 탑승구에서 대기 중이에요.` : ''}` : '항공편이 정시 운항으로 바뀌었어요.');
         notify(s, m.id, 'flight', '도착 예정 시간 갱신', `${arrTime(f)} 도착 예정이에요.`); }); });
     toast('지연 정보를 보호자에게 알렸어요.', '', '관리자'); },
-  'a-progress'(p, el){ commit(s => { const f = s.flights[0]; f.progress = +el.value; if (f.progress >= 100) f.phase = 'landed'; else if (['scheduled','boarding','landed'].includes(f.phase) && f.progress > 0) f.phase = f.progress > 90 ? 'descent' : 'cruise'; }); },
+  'a-progress'(p, el){ const fid = selFlight(p).id; commit(s => { const f = s.flights.find(z => z.id === fid); f.progress = +el.value; if (f.progress >= 100) f.phase = 'landed'; else if (['scheduled','boarding','landed'].includes(f.phase) && f.progress > 0) f.phase = f.progress > 90 ? 'descent' : 'cruise'; }); },
   'a-stage'(p, el){ const u = pUser(p); if (!can(u, 'um.write')) return deny(p); const id = el.dataset.id, v = +el.value;
     commit(s => { const x = s.ums.find(y => y.id === id); x.stage = v; addEvent(s, id, { stage: Math.min(v, 8), kind:'admin', title:'관리자 조정', detail:`시연용 단계 지정 · ${v >= 9 ? '여정 완료' : STAGES[v].label}`, by:'관리자' }); if (v === 5 && !x.live.location.includes('좌석')) { x.live.location = '좌석에 있어요'; x.live.since = nowISO(); } }); },
 };

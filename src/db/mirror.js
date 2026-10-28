@@ -44,6 +44,16 @@
     return allowed.indexOf(v) >= 0 ? v : fallback;
   }
 
+  /* 앱 운항 단계 -> DB flights.phase 제약조건 값 */
+  var PHASE_DB = {
+    scheduled: 'scheduled',
+    boarding: 'boarding',
+    departed: 'enroute',
+    cruise: 'enroute',
+    descent: 'enroute',
+    landed: 'landed',
+  };
+
   /* ------------------------------------------------------------
    * 상태 JSON -> 테이블별 행 묶음
    * ---------------------------------------------------------- */
@@ -66,11 +76,12 @@
         delay_min: num(f.delayMin, 0),
         gate: f.gate || null,
         arr_gate: f.arrGate || null,
-        phase: oneOf(
-          f.phase,
-          ['scheduled', 'checkin', 'boarding', 'enroute', 'landed', 'handed_over'],
-          'scheduled'
-        ),
+        // 앱의 운항 단계와 DB의 phase 제약조건이 다릅니다.
+        //   앱: scheduled / boarding / departed / cruise / descent / landed
+        //   DB: scheduled / checkin / boarding / enroute / landed / handed_over
+        // 비행 중인 세 단계(departed·cruise·descent)는 DB에서 enroute 하나로 묶입니다.
+        // 세밀한 단계는 demo_state 의 JSON 원본에 그대로 남아 있습니다.
+        phase: PHASE_DB[f.phase] || 'scheduled',
       };
     });
 
