@@ -543,7 +543,7 @@ tr:last-child td{border-bottom:0}
 (() => {
 'use strict';
 /* ========== 유틸 ========== */
-const KEY = 'umlink.demo.v7';
+const KEY = 'umlink.demo.v8';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const uid = p => p + '_' + Math.random().toString(36).slice(2, 9);
 const nowISO = () => new Date().toISOString();
@@ -666,7 +666,7 @@ const durTxt = f => `${Math.floor(f.durationMin / 60)}시간 ${f.durationMin % 6
 function seed(){
   const ago = m => new Date(Date.now() - m*60000).toISOString();
   const S = {
-    ver: 7, rev: 0, seededAt: nowISO(),
+    ver: 8, rev: 0, seededAt: nowISO(),
     net: { wifi: true, failUploads: false },
     users: [
       /* 보호자. g1은 아이가 둘(남매)이라 앱에서 아이를 골라서 봐요. */
@@ -700,7 +700,7 @@ function seed(){
       /* f1 · 탑승 대기 — 보호자 한 명(g1)에게 아이 둘 */
       { id:'um1', code:'UM-0001', name:'하린', age:9, seat:'32A', flightId:'f1', guardians:['g1'], crewId:'c1', escortId:'s2', stage:4, pickup:'김지훈 (이모부)',
         live:{ location:'게이트 대기', since: ago(14), sleep:null, mood:'좋아요', meal:null }, service:{}, lastStatusAt: ago(14), lastStatusText:'248번 게이트에서 탑승 대기' },
-      { id:'um2', code:'UM-0002', name:'서아', age:7, seat:'32B', flightId:'f1', guardians:['g1'], crewId:'c1', escortId:'s2', stage:4, pickup:'김지훈 (이모부)',
+      { id:'um2', code:'UM-0002', name:'하윤', age:7, seat:'32B', flightId:'f1', guardians:['g1'], crewId:'c1', escortId:'s2', stage:4, pickup:'김지훈 (이모부)',
         live:{ location:'게이트 대기', since: ago(14), sleep:null, mood:'보통이에요', meal:null }, service:{}, lastStatusAt: ago(14), lastStatusText:'248번 게이트에서 탑승 대기' },
       /* f2 · 비행 중 */
       { id:'um3', code:'UM-0003', name:'도윤', age:8, seat:'41C', flightId:'f2', guardians:['g2'], crewId:'c2', escortId:'s2', stage:5, pickup:'이수민 (고모)',
@@ -746,7 +746,7 @@ function seed(){
     }
   });
 
-  /* 동의 — 하린·서아(같은 보호자)와 민서는 완료, 도윤은 첫 로그인 상태로 둬요. */
+  /* 동의 — 하린·하윤(같은 보호자)과 민서는 완료, 도윤은 첫 로그인 상태로 둬요. */
   const consent = (umId, gid, mins) => S.consents.push({ id:uid('cr'), umId, guardianId:gid,
     verifiedAt: ago(mins), requiredAt: ago(mins), items:{ child:true, contact:true, staff:true },
     shoot:{ granted:true, at: ago(mins - 1), withdrawnAt:null }, ai:{ granted:true, at: ago(mins - 1), withdrawnAt:null },
@@ -788,7 +788,7 @@ let storageOK = true;
 
 /* 다른 탭 또는 다른 기기에서 상태가 바뀌었을 때 */
 function adoptState(next, origin){
-  if (!next || next.ver !== 7) return;
+  if (!next || next.ver !== 8) return;
   if (origin !== 'remote' && next.rev === S.rev) return;
   S = next;
   renderAll();
@@ -806,7 +806,7 @@ DB.init({
 });
 
 let S = DB.readLocal();
-if (!S || S.ver !== 7) { S = seed(); DB.commit(S); }
+if (!S || S.ver !== 8) { S = seed(); DB.commit(S); }
 
 function save(){ storageOK = DB.commit(S); }
 function commit(fn){ fn(S); S.rev++; tickProducing(true); save(); renderAll(); if (!storageOK) toast('브라우저 저장 공간이 부족하거나 차단돼 이 탭에만 반영돼요.', 'err'); }
