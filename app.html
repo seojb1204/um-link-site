@@ -1175,7 +1175,23 @@ function renderPane(p){
   if (u.role === 'ground') return bar + renderGround(p, u);
   return bar + renderAdmin(p, u);
 }
-function rerender(p){ const el = root.querySelector(`[data-pane="${p.id}"]`); if (el) { el.innerHTML = renderPane(p); fxMount(p); } }
+/* 패널 하나만 다시 그려요.
+   스크롤되는 것은 문서 전체입니다(.pane 안에는 스크롤러가 없어요).
+   innerHTML 을 교체하는 찰나 패널이 비어 문서 높이가 0 가까이 줄어드는데,
+   iOS 사파리는 그 순간 스크롤 위치를 맨 위로 깎고 되돌려 주지 않습니다.
+   (안드로이드 크롬은 알아서 복원해서 증상이 안 보여요.)
+   그래서 ① 교체하는 동안 높이를 붙들어 두고 ② 끝나면 위치를 되돌립니다. */
+function rerender(p){
+  const el = root.querySelector(`[data-pane="${p.id}"]`);
+  if (!el) return;
+  const sx = window.scrollX, sy = window.scrollY;
+  const keep = el.offsetHeight;
+  if (keep) el.style.minHeight = keep + 'px';
+  el.innerHTML = renderPane(p);
+  fxMount(p);
+  if (window.scrollX !== sx || window.scrollY !== sy) window.scrollTo(sx, sy);
+  if (keep) el.style.minHeight = '';
+}
 
 /* ---------- 로그인 ---------- */
 /* 계정 목록에 쓰는 설명문. 시드가 바뀌어도 따라오도록 데이터에서 만들어요. */
